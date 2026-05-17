@@ -1,0 +1,13 @@
+.DS_Store
+*.o
+*.a
+*.dSYM/
+projects/push_swap/push_swap
+projects/push_swap/checker
+projects/push_swap/checker_Mac
+projects/push_swap/checker_linux
+projects/push_swap/pro_checker
+projects/push_swap/push_swap_test.sh
+projects/push_swap/push_swap_test_linux.sh
+projects/push_swap/traces.txt
+projects/push_swap/test_check.txt
