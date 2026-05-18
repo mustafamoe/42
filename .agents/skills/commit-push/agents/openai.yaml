@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Push"
+  short_description: "Commit and push repository changes"
+  default_prompt: "Use $commit-push to commit and push the current repository changes."
