@@ -7,3 +7,4 @@ Projects from the 42 curriculum.
 - `push_swap`
 - `python00`
 - `python01`
+- `python02`
