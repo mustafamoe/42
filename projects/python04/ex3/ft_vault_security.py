@@ -17,6 +17,12 @@ def secure_archive(
 
 
 def main() -> None:
+    sample_content = (
+        "[FRAGMENT 001] Digital preservation protocols established 2087\n"
+        "[FRAGMENT 002] Knowledge must survive the entropy wars\n"
+        "[FRAGMENT 003] Every byte saved is a victory against oblivion\n"
+    )
+
     print("=== Cyber Archives Security ===")
 
     print("Using 'secure_archive' to read from a nonexistent file:")
@@ -27,6 +33,9 @@ def main() -> None:
 
     print("Using 'secure_archive' to read from a regular file:")
     success, content = secure_archive("ancient_fragment.txt")
+    if not success:
+        secure_archive("ancient_fragment.txt", "write", sample_content)
+        success, content = secure_archive("ancient_fragment.txt")
     print((success, content))
 
     print("Using 'secure_archive' to write previous content to a new file:")

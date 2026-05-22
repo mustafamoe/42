@@ -49,7 +49,7 @@ def display_transformed_data(content: str) -> None:
 def read_output_name() -> str:
     sys.stdout.write("Enter new file name (or empty): ")
     sys.stdout.flush()
-    return sys.stdin.readline().rstrip("\n")
+    return sys.stdin.readline().rstrip("\r\n")
 
 
 def save_archive(file_name: str, content: str) -> None:

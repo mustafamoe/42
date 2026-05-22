@@ -40,6 +40,14 @@ def display_transformed_data(content: str) -> None:
     display_block(content)
 
 
+def read_output_name() -> str:
+    try:
+        return input("Enter new file name (or empty): ")
+    except EOFError:
+        print()
+        return ""
+
+
 def save_archive(file_name: str, content: str) -> None:
     print(f"Saving data to '{file_name}'")
 
@@ -69,7 +77,7 @@ def main() -> None:
     transformed = add_archive_markers(content)
     display_transformed_data(transformed)
 
-    output_name = input("Enter new file name (or empty): ")
+    output_name = read_output_name()
     if output_name == "":
         print("Not saving data.")
     else:

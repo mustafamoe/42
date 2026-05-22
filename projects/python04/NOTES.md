@@ -86,6 +86,7 @@ The exercise teaches:
 - Ask the user for an output file name with `input()`
 - Open a file in write mode
 - Write new content to the file
+- Treat end-of-file at the prompt like an empty answer
 
 Important lesson:
 
@@ -112,7 +113,7 @@ Useful pattern:
 ```python
 sys.stdout.write("Enter new file name (or empty): ")
 sys.stdout.flush()
-output_name = sys.stdin.readline().rstrip("\n")
+output_name = sys.stdin.readline().rstrip("\r\n")
 ```
 
 Errors are written to `stderr`:
@@ -132,6 +133,7 @@ The exercise teaches:
 Important lesson:
 
 Use `stderr` for errors so normal output can be separated from problem messages.
+The prompt strips line endings only, so spaces inside a file name are preserved.
 
 ## Exercise 3: Vault Security
 
@@ -166,6 +168,9 @@ Important lesson:
 
 `with open(...)` closes the file automatically, even if an exception happens while the
 file is being used.
+
+The script demonstration creates `ancient_fragment.txt` only if it is missing, so the
+regular-file example works without overwriting a provided sample file.
 
 ## Module summary
 
