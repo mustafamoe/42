@@ -164,6 +164,11 @@ Important lesson:
 Generators are useful when data should be produced one item at a time instead of stored
 all at once.
 
+Gotcha:
+
+Build the 10-event list with a normal loop here. Comprehensions are the main topic of
+Exercise 6.
+
 ## Exercise 6: Data Alchemist
 
 File: `ex6/ft_data_alchemist.py`

@@ -38,7 +38,9 @@ def main() -> None:
         print(f"Event {index}: Player {player} did action {action}")
 
     event_stream = gen_event()
-    events = [next(event_stream) for _ in range(10)]
+    events: list[Event] = []
+    for _ in range(10):
+        events.append(next(event_stream))
     print(f"Built list of 10 events: {events}")
     for event in consume_event(events):
         print(f"Got event from list: {event}")
