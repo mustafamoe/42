@@ -10,3 +10,4 @@ Projects from the 42 curriculum.
 - `python02`
 - `python03`
 - `python04`
+- `python05`
