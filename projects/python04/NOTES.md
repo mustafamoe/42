@@ -11,6 +11,11 @@ Important rule from the subject:
 
 Do not use `with open(...)` before exercise 3.
 
+Subject compliance:
+
+Exercises 0, 1, and 2 manually close opened files. Exercise 3 is the first and only
+exercise in this module that uses `with open(...)`.
+
 ## Useful functions and objects
 
 `open(file_name, "r")` opens a file for reading.
@@ -134,6 +139,11 @@ Important lesson:
 
 Use `stderr` for errors so normal output can be separated from problem messages.
 The prompt strips line endings only, so spaces inside a file name are preserved.
+
+Gotcha:
+
+Exercise 2 must not use `input()`. It reads from `sys.stdin.readline()` and writes the
+prompt through `sys.stdout.write()`.
 
 ## Exercise 3: Vault Security
 

@@ -83,6 +83,11 @@ Important lesson:
 
 Tuples are good for fixed data that belongs together, like a 3D point.
 
+Gotcha:
+
+Exercise 2 does not authorize `len()`, so the coordinate parser checks the number of
+comma-separated values by unpacking them into `x`, `y`, and `z` parts.
+
 ## Exercise 3: Achievement Tracker
 
 File: `ex3/ft_achievement_tracker.py`
@@ -168,6 +173,9 @@ Gotcha:
 
 Build the 10-event list with a normal loop here. Comprehensions are the main topic of
 Exercise 6.
+
+Use `import typing` and `typing.Generator` for the generator type hints, matching the
+authorized import style in the subject.
 
 ## Exercise 6: Data Alchemist
 

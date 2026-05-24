@@ -1,5 +1,5 @@
 import random
-from typing import Generator
+import typing
 
 
 Event = tuple[str, str]
@@ -19,12 +19,12 @@ ACTIONS = [
 ]
 
 
-def gen_event() -> Generator[Event, None, None]:
+def gen_event() -> typing.Generator[Event, None, None]:
     while True:
         yield (random.choice(PLAYERS), random.choice(ACTIONS))
 
 
-def consume_event(events: list[Event]) -> Generator[Event, None, None]:
+def consume_event(events: list[Event]) -> typing.Generator[Event, None, None]:
     while len(events) > 0:
         index = random.randrange(len(events))
         yield events.pop(index)
