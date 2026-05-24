@@ -1,5 +1,14 @@
 # Python Module 00 Notes
 
+## Subject
+
+Stored files:
+
+- `en.subject.pdf`
+- `en.subject.txt`
+
+Subject: Growing Code, Python Fundamentals Through Garden Data, version 3.0.
+
 ## Big idea
 
 This module is about basic Python functions, input, output, variables, conditionals,
@@ -25,6 +34,13 @@ Recursion means a function calls itself.
 
 File: `ex0/ft_hello_garden.py`
 
+Function: `ft_hello_garden()`
+
+Allowed: `print()`.
+
+Not allowed: input, imports, main program, direct function call in the file, code
+outside the requested function.
+
 Idea:
 
 Create a function and print a fixed message.
@@ -36,6 +52,13 @@ A function groups code so it can be reused later.
 ## Exercise 1: Garden Name
 
 File: `ex1/ft_garden_name.py`
+
+Function: `ft_garden_name()`
+
+Allowed: `input()`, `print()`.
+
+Not allowed: `int()`, imports, main program, direct function call in the file, code
+outside the requested function.
 
 Idea:
 
@@ -53,6 +76,13 @@ Use f-strings when text needs to include variable values.
 ## Exercise 2: Plot Area
 
 File: `ex2/ft_plot_area.py`
+
+Function: `ft_plot_area()`
+
+Allowed: `input()`, `int()`, `print()`.
+
+Not allowed: imports, main program, direct function call in the file, code outside
+the requested function, extra validation for invalid input.
 
 Idea:
 
@@ -72,6 +102,13 @@ math.
 
 File: `ex3/ft_harvest_total.py`
 
+Function: `ft_harvest_total()`
+
+Allowed: `input()`, `int()`, `print()`.
+
+Not allowed: imports, main program, direct function call in the file, code outside
+the requested function, extra validation for invalid input.
+
 Idea:
 
 Read three harvest values and add them together.
@@ -83,6 +120,13 @@ Store separate input values in variables before combining them.
 ## Exercise 4: Plant Age
 
 File: `ex4/ft_plant_age.py`
+
+Function: `ft_plant_age()`
+
+Allowed: `input()`, `int()`, `print()`.
+
+Not allowed: imports, main program, direct function call in the file, code outside
+the requested function, extra validation for invalid input.
 
 Idea:
 
@@ -103,6 +147,13 @@ Use conditionals when the program should make a decision.
 
 File: `ex5/ft_water_reminder.py`
 
+Function: `ft_water_reminder()`
+
+Allowed: `input()`, `int()`, `print()`.
+
+Not allowed: imports, main program, direct function call in the file, code outside
+the requested function, extra validation for invalid input.
+
 Idea:
 
 Check how many days passed since watering.
@@ -119,6 +170,16 @@ Files:
 
 - `ex6/ft_count_harvest_iterative.py`
 - `ex6/ft_count_harvest_recursive.py`
+
+Functions:
+
+- `ft_count_harvest_iterative()`
+- `ft_count_harvest_recursive()`
+
+Allowed: `input()`, `int()`, `print()`, `range()`, helper functions for recursion.
+
+Not allowed: imports, main program, direct function call in the file, code outside
+the requested function or recursion helper, extra validation for invalid input.
 
 Idea:
 
@@ -153,6 +214,17 @@ Gotcha:
 
 File: `ex7/ft_seed_inventory.py`
 
+Function:
+
+```python
+def ft_seed_inventory(seed_type: str, quantity: int, unit: str) -> None:
+```
+
+Allowed: `print()`, string methods.
+
+Not allowed: missing type hints, input, `int()`, imports, main program, direct
+function call in the file, code outside the requested function.
+
 Idea:
 
 Use parameters and conditional branches to print different messages for different
@@ -179,6 +251,15 @@ python3 -c 'from ex0.ft_hello_garden import ft_hello_garden; ft_hello_garden()'
 ```
 
 For exercises that use `input()`, run the same way and then type the requested values.
+
+Check the project:
+
+```bash
+python3.10 -m flake8 projects/python00
+python3.10 -m mypy projects/python00
+```
+
+Latest check result: both commands pass.
 
 ## Module summary
 

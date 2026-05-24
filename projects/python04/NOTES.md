@@ -7,6 +7,22 @@ This module is about file operations and streams.
 The main goal is to open text files, read their contents, write new files, handle
 errors, and close resources correctly.
 
+Subject files:
+
+- `en.subject.pdf`
+- `en.subject.txt`
+
+Common requirements:
+
+- Use Python 3.10 or later.
+- Pass `flake8`.
+- Add type hints to all functions and methods and pass `mypy`.
+- Handle exceptions gracefully.
+- Only repository content is evaluated.
+- Do not use `with open(...)` before exercise 3.
+- Standard types and collections are allowed with their methods and constructors:
+  `str`, `int`, `float`, `list`, `dict`, `set`, and `tuple`.
+
 Important rule from the subject:
 
 Do not use `with open(...)` before exercise 3.
@@ -34,6 +50,25 @@ replaces the file if it already exists.
 ## Exercise 0: Ancient Text Recovery
 
 File: `ex0/ft_ancient_text.py`
+
+Authorized:
+
+- `import sys`
+- `sys.argv`
+- `len()`
+- `open()`
+- `import typing`
+- `typing.IO`
+- file object `read()`
+- file object `close()`
+- `print()`
+
+Not allowed / avoid:
+
+- `with open(...)`
+- `input()`
+- direct use of `sys.stdin`, `sys.stdout`, or `sys.stderr`
+- writing files
 
 Idea:
 
@@ -64,6 +99,25 @@ because the files are opened as text.
 ## Exercise 1: Archive Creation
 
 File: `ex1/ft_archive_creation.py`
+
+Authorized:
+
+- `import sys`
+- `sys.argv`
+- `len()`
+- `open()`
+- `import typing`
+- `typing.IO`
+- file object `read()`
+- file object `write()`
+- file object `close()`
+- `print()`
+- `input()`
+
+Not allowed / avoid:
+
+- `with open(...)`
+- direct use of `sys.stdin`, `sys.stdout`, or `sys.stderr`
 
 Idea:
 
@@ -101,6 +155,30 @@ already exists.
 ## Exercise 2: Stream Management
 
 File: `ex2/ft_stream_management.py`
+
+Authorized:
+
+- `import sys`
+- `sys.argv`
+- `sys.stdin`
+- `sys.stdout`
+- `sys.stderr`
+- `len()`
+- `open()`
+- `import typing`
+- `typing.IO`
+- file object `read()`
+- stream/file object `readline()`
+- stream/file object `write()`
+- stream/file object `flush()`
+- file object `close()`
+- `print()`
+
+Not allowed / avoid:
+
+- `with open(...)`
+- `input()`
+- printing exception messages to standard output
 
 Idea:
 
@@ -149,6 +227,25 @@ prompt through `sys.stdout.write()`.
 
 File: `ex3/ft_vault_security.py`
 
+Authorized:
+
+- `open()`
+- `read()`
+- `write()`
+- `print()`
+
+Required / allowed:
+
+- Use `with open(...)`.
+- Create `secure_archive()`.
+- Return `(True, str)` on success and `(False, str)` on failure.
+- Accept a mandatory file name, an optional action, and optional write content.
+
+Not allowed / avoid:
+
+- Crashing on file errors.
+- Reusing the manual close pattern from exercises 0, 1, and 2.
+
 Idea:
 
 Create `secure_archive()` to safely read or write a file and return a result tuple:
@@ -195,3 +292,10 @@ Short version:
 
 This module teaches how to work with files safely and how to separate normal program
 output from error messages.
+
+## Checks
+
+```sh
+python3.10 -m flake8 projects/python04
+python3.10 -m mypy projects/python04
+```

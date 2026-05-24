@@ -6,6 +6,9 @@
   gotchas, and any essential information needed later for review or defense.
 - Keep `README.md` as simple as possible.
 - Do not add explanations or descriptions to `README.md`.
+- Use Python 3.10 for Python projects and checks.
+- Before considering Python work finished, run `flake8` and `mypy`
+  successfully with Python 3.10.
 - When the user says `/commit`, `commit`, or `commit and push`, check
   `git status`, stage relevant changes, commit with a concise message, push to
   the current branch, and confirm the working tree is clean.

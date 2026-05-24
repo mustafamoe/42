@@ -134,7 +134,7 @@ class CSVExportPlugin:
 
     def _format_field(self, value: str) -> str:
         if self._needs_quotes(value):
-            return f'"{value.replace("\"", "\"\"")}"'
+            return '"' + value.replace('"', '""') + '"'
         return value
 
     def _needs_quotes(self, value: str) -> bool:

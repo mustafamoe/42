@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mazegen"
+version = "0.1.0"
+description = "Reusable maze generator for the A-Maze-ing project"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "mal-hall" }
+]
+
+[tool.setuptools]
+py-modules = ["mazegen"]

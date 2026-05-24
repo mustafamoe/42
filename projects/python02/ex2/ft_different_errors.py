@@ -7,7 +7,8 @@ def garden_operations(operation_number: int) -> None:
     elif operation_number == 2:
         open("/non/existent/file")
     elif operation_number == 3:
-        print("plant count: " + 3)
+        # Intentional TypeError required by the subject.
+        print("plant count: " + 3)  # type: ignore[operator]
 
 
 def test_error_types() -> None:

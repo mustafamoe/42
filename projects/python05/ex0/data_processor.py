@@ -120,8 +120,9 @@ def test_numeric_processor() -> None:
     print(f"Trying to validate input '42': {processor.validate(42)}")
     print(f"Trying to validate input 'Hello': {processor.validate('Hello')}")
     print("Test invalid ingestion of string 'foo' without prior validation:")
+    invalid_numeric: typing.Any = "foo"
     try:
-        processor.ingest("foo")
+        processor.ingest(invalid_numeric)
     except Exception as error:
         print(f"Got exception: {error}")
 

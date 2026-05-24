@@ -11,3 +11,5 @@ Projects from the 42 curriculum.
 - `python03`
 - `python04`
 - `python05`
+- `python06`
+- `a_maze_ing`

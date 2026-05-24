@@ -1,0 +1,17 @@
+# Maze geometry
+WIDTH=20
+HEIGHT=15
+ENTRY=0,0
+EXIT=19,14
+
+# Generation
+SEED=42
+PERFECT=true
+INCLUDE_42=true
+EXTRA_OPENINGS=0.12
+
+# Output and terminal view
+OUTPUT=maze.txt
+SHOW_PATH=true
+WALL_COLOR=cyan
+INTERACTIVE=false

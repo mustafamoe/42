@@ -31,6 +31,27 @@ the required method, even if it does not inherit from the protocol.
 
 File: `ex0/data_processor.py`
 
+Subject requirements:
+
+- Directory: `ex0/`
+- File to submit: `data_processor.py`
+- Authorized: builtins, standard types, `import typing`, `import abc`
+- Not allowed: any imports except `typing` and `abc`
+- Create abstract class `DataProcessor` inheriting from `ABC`.
+- Define abstract `validate(self, data: Any) -> bool`.
+- Define abstract `ingest(self, data: Any) -> None`.
+- Define shared `output(self) -> tuple[int, str]`.
+- `output()` returns and removes the oldest stored item plus its processor-local
+  rank.
+- `NumericProcessor` accepts `int`, `float`, and mixed lists of both.
+- `TextProcessor` accepts `str` and lists of strings.
+- `LogProcessor` accepts `dict[str, str]` and lists of that type.
+- Each concrete `ingest()` signature must reflect the data accepted by that
+  processor.
+- Invalid data passed directly to `ingest()` must raise an exception.
+- Tests must show valid and invalid `validate()` calls, one invalid direct
+  `ingest()` call, ingestion, and `output()`.
+
 Idea:
 
 Create `DataProcessor` as an abstract class, then implement:
@@ -57,6 +78,23 @@ formats its own data type.
 
 File: `ex1/data_stream.py`
 
+Subject requirements:
+
+- Directory: `ex1/`
+- File to submit: `data_stream.py`
+- Authorized: builtins, standard types, `import typing`, `import abc`
+- Not allowed: any imports except `typing` and `abc`
+- Reuse and improve Exercise 0 code.
+- Create `DataStream`.
+- Implement `register_processor(self, proc: DataProcessor) -> None`.
+- Implement `process_stream(self, stream: list[typing.Any]) -> None`.
+- Route each stream element to an appropriate registered processor through
+  `validate()`/`ingest()` polymorphism.
+- Print an error when no processor can handle an element.
+- Implement `print_processors_stats(self) -> None`.
+- Test stream processing, statistics, consuming outputs, and updated
+  statistics.
+
 Idea:
 
 Create `DataStream` to register processors and route every element of a mixed
@@ -76,6 +114,24 @@ details. This makes adding a new processor easier.
 ## Exercise 2: Data Pipeline
 
 File: `ex2/data_pipeline.py`
+
+Subject requirements:
+
+- Directory: `ex2/`
+- File to submit: `data_pipeline.py`
+- Authorized: builtins, standard types, `import typing`, `import abc`
+- Not allowed: any imports except `typing` and `abc`
+- Reuse and improve Exercise 1 code.
+- Create `ExportPlugin` inheriting from `typing.Protocol`.
+- Define `process_output(self, data: list[tuple[int, str]]) -> None` in the
+  protocol.
+- Add `output_pipeline(self, nb: int, plugin: ExportPlugin) -> None` to
+  `DataStream`.
+- `output_pipeline()` consumes up to `nb` elements from all registered data
+  processors and sends them to the provided plugin.
+- Create at least one CSV export plugin and one JSON export plugin.
+- Manually create valid CSV and JSON strings.
+- Not allowed: CSV/JSON helper imports or any other specific plugin imports.
 
 Idea:
 
@@ -101,9 +157,14 @@ python3 projects/python05/ex2/data_pipeline.py
 python3 -m py_compile projects/python05/ex0/data_processor.py
 python3 -m py_compile projects/python05/ex1/data_stream.py
 python3 -m py_compile projects/python05/ex2/data_pipeline.py
+python3.10 -m flake8 projects/python05
+python3.10 -m mypy projects/python05
 ```
 
 ## Gotchas
+
+The official subject is stored as `en.subject.pdf`, with extracted text in
+`en.subject.txt`.
 
 `output()` removes the oldest stored item.
 
