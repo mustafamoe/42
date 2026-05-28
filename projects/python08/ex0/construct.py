@@ -4,6 +4,7 @@ import sys
 
 
 def is_virtual_environment() -> bool:
+    # Old virtualenv sets real_prefix; modern venv changes sys.prefix.
     return (
         hasattr(sys, "real_prefix")
         or sys.prefix != getattr(sys, "base_prefix", sys.prefix)
@@ -11,10 +12,12 @@ def is_virtual_environment() -> bool:
 
 
 def environment_path() -> str:
+    # VIRTUAL_ENV exists after activation; sys.prefix works as a fallback.
     return os.environ.get("VIRTUAL_ENV", sys.prefix)
 
 
 def environment_name(path: str) -> str:
+    # Keep only the final folder name, for example matrix_env.
     name = os.path.basename(path)
     if name:
         return name
@@ -23,13 +26,16 @@ def environment_name(path: str) -> str:
 
 def default_site_packages(prefix: str) -> str:
     if os.name == "nt":
+        # Windows venvs store packages in Lib/site-packages.
         return os.path.join(prefix, "Lib", "site-packages")
 
+    # Unix venvs include the Python version in the package path.
     version = f"python{sys.version_info.major}.{sys.version_info.minor}"
     return os.path.join(prefix, "lib", version, "site-packages")
 
 
 def detected_site_packages() -> list[str]:
+    # Ask Python for package locations, then fall back for limited installs.
     try:
         return site.getsitepackages()
     except (AttributeError, OSError):
@@ -40,6 +46,7 @@ def detected_site_packages() -> list[str]:
 
 
 def current_site_packages() -> str:
+    # Prefer detected paths; compute the common layout only if needed.
     locations = detected_site_packages()
     if locations:
         return locations[0]
@@ -47,6 +54,7 @@ def current_site_packages() -> str:
 
 
 def global_site_packages() -> str:
+    # base_prefix points back to the original/global Python install.
     base_prefix = getattr(sys, "base_prefix", sys.prefix)
     return default_site_packages(base_prefix)
 

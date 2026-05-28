@@ -30,12 +30,14 @@ class MatrixConfig:
 
 
 def project_path(filename: str) -> str:
+    # Build paths beside oracle.py, no matter where the command is run.
     directory = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(directory, filename)
 
 
 def load_dotenv_file(env_path: str) -> bool:
     try:
+        # importlib is not authorized here, so use the built-in importer.
         dotenv_module = __import__("dotenv")
     except ImportError:
         print("[WARN] python-dotenv is not installed.")
@@ -43,6 +45,7 @@ def load_dotenv_file(env_path: str) -> bool:
         return False
 
     load_dotenv = getattr(dotenv_module, "load_dotenv")
+    # Real environment variables keep priority over values from .env.
     load_dotenv(env_path, override=False)
     return True
 
@@ -56,11 +59,13 @@ def configured_value(
     if value:
         return value
 
+    # Missing settings are reported but replaced with safe defaults.
     warnings.append(f"{name} is missing; using a safe default.")
     return default
 
 
 def default_log_level(mode: str) -> str:
+    # Production should be quieter than local development.
     if mode == "production":
         return "INFO"
     return "DEBUG"
@@ -70,6 +75,7 @@ def load_config() -> MatrixConfig:
     warnings: list[str] = []
     mode = configured_value("MATRIX_MODE", "development", warnings)
     if mode not in VALID_MODES:
+        # Invalid modes are rejected instead of changing behavior silently.
         warnings.append("MATRIX_MODE must be development or production.")
         mode = "development"
 
@@ -101,6 +107,7 @@ def load_config() -> MatrixConfig:
 
 
 def database_status(config: MatrixConfig) -> str:
+    # The visible output changes between development and production.
     if not config.database_url:
         return "Missing database URL"
     if config.matrix_mode == "production":
@@ -129,6 +136,7 @@ def runtime_profile(config: MatrixConfig) -> str:
 
 
 def file_contains(path: str, expected_line: str) -> bool:
+    # Used to verify that .env is listed in .gitignore.
     try:
         with open(path, "r", encoding="utf-8") as file:
             for line in file:
@@ -140,6 +148,7 @@ def file_contains(path: str, expected_line: str) -> bool:
 
 
 def source_contains_secret(api_key: str) -> bool:
+    # A simple guard against accidentally hardcoding the current API key.
     if not api_key:
         return False
 

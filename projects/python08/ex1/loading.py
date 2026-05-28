@@ -6,6 +6,7 @@ Dependency = tuple[str, str, str]
 
 DATA_POINTS = 1000
 OUTPUT_FILE = "matrix_analysis.png"
+# Each dependency stores: package name, import name, success message.
 DEPENDENCIES: list[Dependency] = [
     ("pandas", "pandas", "Data manipulation ready"),
     ("numpy", "numpy", "Numerical computation ready"),
@@ -14,6 +15,7 @@ DEPENDENCIES: list[Dependency] = [
 
 
 def dependency_version(package_name: str, import_name: str) -> str:
+    # Prefer installed package metadata; fall back to module __version__.
     try:
         return importlib.metadata.version(package_name)
     except importlib.metadata.PackageNotFoundError:
@@ -25,6 +27,7 @@ def dependency_version(package_name: str, import_name: str) -> str:
 def check_dependency(dependency: Dependency) -> bool:
     package_name, import_name, ready_message = dependency
     try:
+        # Dynamic import lets us report missing packages without a traceback.
         importlib.import_module(import_name)
     except ImportError:
         print(f"[MISSING] {package_name} - install this Matrix program")
@@ -60,6 +63,7 @@ def print_installation_help(missing: list[str]) -> None:
 
 
 def show_dependency_management_comparison() -> None:
+    # pip uses requirements.txt; Poetry uses pyproject.toml.
     print()
     print("Dependency management comparison:")
     print("pip reads requirements.txt and installs into the active Python.")
@@ -71,6 +75,7 @@ def show_dependency_management_comparison() -> None:
 def import_programs() -> dict[str, object]:
     matplotlib = importlib.import_module("matplotlib")
     use_backend = getattr(matplotlib, "use")
+    # Agg saves image files without needing a GUI window.
     use_backend("Agg")
 
     return {
@@ -106,9 +111,11 @@ def build_matrix_data(
 ) -> object:
     random_module = getattr(numpy_module, "random")
     default_rng = getattr(random_module, "default_rng")
+    # A seed keeps the simulated data repeatable during review.
     rng = default_rng(42)
     linspace = getattr(numpy_module, "linspace")
 
+    # Numpy is the source of the dataset, as required by the subject.
     data = {
         "cycle": linspace(1, DATA_POINTS, DATA_POINTS, dtype=int),
         "signal_strength": rng.normal(100.0, 12.0, DATA_POINTS),
@@ -124,6 +131,7 @@ def analyze_matrix_data(frame: object) -> dict[str, float]:
     anomaly = column(frame, "anomaly_score")
     agents = column(frame, "agents_detected")
 
+    # Pandas Series methods produce the summary statistics.
     return {
         "average_signal": series_mean(signal),
         "average_anomaly": series_mean(anomaly),
@@ -161,6 +169,7 @@ def generate_visualization(
     ylabel("Reading")
     legend(["Signal strength", "Anomaly score", "Average signal"])
     tight_layout()
+    # The visualization is generated output, not a file to submit.
     savefig(OUTPUT_FILE, dpi=150)
     close()
 
