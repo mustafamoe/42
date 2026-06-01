@@ -30,14 +30,10 @@ def test_battle(
     print(second.attack())
 
 
-def main() -> None:
+if __name__ == "__main__":
     flame_factory = FlameFactory()
     aqua_factory = AquaFactory()
 
     test_factory(flame_factory)
     test_factory(aqua_factory)
     test_battle(flame_factory, aqua_factory)
-
-
-if __name__ == "__main__":
-    main()

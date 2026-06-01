@@ -69,7 +69,7 @@ def battle(opponents: list[Opponent]) -> None:
                 return
 
 
-def main() -> None:
+def tournaments() -> None:
     tournament_0 = [
         (FlameFactory(), NormalStrategy()),
         (HealingCreatureFactory(), DefensiveStrategy()),
@@ -84,16 +84,14 @@ def main() -> None:
         (TransformCreatureFactory(), AggressiveStrategy()),
     ]
 
-    print("Tournament 0 (basic)")
-    print_roster(tournament_0)
-    battle(tournament_0)
-    print("Tournament 1 (error)")
-    print_roster(tournament_1)
-    battle(tournament_1)
-    print("Tournament 2 (multiple)")
-    print_roster(tournament_2)
-    battle(tournament_2)
-
 
 if __name__ == "__main__":
-    main()
+    print("Tournament 0 (basic)")
+    print_roster(tournaments.tournament_0)
+    battle(tournaments.tournament_0)
+    print("Tournament 1 (error)")
+    print_roster(tournaments.tournament_1)
+    battle(tournaments.tournament_1)
+    print("Tournament 2 (multiple)")
+    print_roster(tournaments.tournament_2)
+    battle(tournaments.tournament_2)

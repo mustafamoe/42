@@ -3,14 +3,15 @@ from ex1 import TransformCreatureFactory
 
 
 def test_healing_factory(factory: HealingCreatureFactory) -> None:
+   
     base = factory.create_base()
-    evolved = factory.create_evolved()
-
     print("Testing Creature with healing capability")
     print("base:")
     print(base.describe())
     print(base.attack())
     print(base.heal())
+
+    evolved = factory.create_evolved()
     print("evolved:")
     print(evolved.describe())
     print(evolved.attack())
@@ -18,9 +19,8 @@ def test_healing_factory(factory: HealingCreatureFactory) -> None:
 
 
 def test_transform_factory(factory: TransformCreatureFactory) -> None:
+    
     base = factory.create_base()
-    evolved = factory.create_evolved()
-
     print("Testing Creature with transform capability")
     print("base:")
     print(base.describe())
@@ -28,6 +28,8 @@ def test_transform_factory(factory: TransformCreatureFactory) -> None:
     print(base.transform())
     print(base.attack())
     print(base.revert())
+
+    evolved = factory.create_evolved()
     print("evolved:")
     print(evolved.describe())
     print(evolved.attack())
@@ -36,10 +38,6 @@ def test_transform_factory(factory: TransformCreatureFactory) -> None:
     print(evolved.revert())
 
 
-def main() -> None:
+if __name__ == "__main__":
     test_healing_factory(HealingCreatureFactory())
     test_transform_factory(TransformCreatureFactory())
-
-
-if __name__ == "__main__":
-    main()
