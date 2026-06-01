@@ -73,6 +73,8 @@ def main() -> None:
     tournament_0 = [
         (FlameFactory(), NormalStrategy()),
         (HealingCreatureFactory(), DefensiveStrategy()),
+        (FlameFactory(), NormalStrategy()),
+        (HealingCreatureFactory(), DefensiveStrategy()),
     ]
     tournament_1 = [
         (FlameFactory(), AggressiveStrategy()),

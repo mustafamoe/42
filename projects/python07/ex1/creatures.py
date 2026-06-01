@@ -1,15 +1,13 @@
-import abc
-
 from ex0.creature import Creature
 from ex1.capabilities import HealCapability
 from ex1.capabilities import TransformCapability
 
 
-class HealingCreature(Creature, HealCapability, abc.ABC):
+class HealingCreature(Creature, HealCapability):
     pass
 
 
-class TransformingCreature(Creature, TransformCapability, abc.ABC):
+class TransformingCreature(Creature, TransformCapability):
     pass
 
 
