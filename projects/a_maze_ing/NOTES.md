@@ -47,15 +47,18 @@ make package
 
 ## Interaction
 
-Set `INTERACTIVE=true` in `config.txt`.
+The default `config.txt` sets `INTERACTIVE=true`, so running the program in a
+terminal displays a numbered menu after the maze.
 
-Commands:
+Menu actions:
 
-- `new`: generate again using the next seed
-- `path`: show or hide the shortest path
-- `color NAME`: change wall color
-- `save`: rewrite the output file
-- `quit`: exit
+- `1`: generate again using the next seed
+- `2`: show or hide the shortest path
+- `3`: change maze wall color
+- `4`: rewrite the output file
+- `0`: exit
+
+Typed aliases also work: `new`, `path`, `color NAME`, `save`, and `quit`.
 
 ## Gotchas
 
