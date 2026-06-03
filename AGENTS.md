@@ -1,7 +1,8 @@
 # Agent Instructions
 
 - Keep a single workspace-level `README.md` at the repository root.
-- Do not create or update `README.md` files inside individual project directories.
+- Do not create or update `README.md` files inside individual project directories
+  unless that project's subject explicitly requires one.
 - After finishing a project, write or update a concise `NOTES.md` in that project.
 - Use `NOTES.md` for the project idea, key concepts, exercise summaries, commands,
   gotchas, and any essential information needed later for review or defense.
