@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mazegen"
 version = "0.1.0"
 description = "Reusable maze generator for the A-Maze-ing project"
-readme = "README.md"
+readme = "NOTES.md"
 requires-python = ">=3.10"
 authors = [
     { name = "mal-hall" }

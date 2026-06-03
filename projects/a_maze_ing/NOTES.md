@@ -31,7 +31,7 @@ the maze is too small or placement would isolate open cells.
 
 - `a_maze_ing.py`: config parsing, output file, terminal renderer, interaction
 - `mazegen.py`: reusable generator class
-- `config.txt`: default config
+- `config.txt`: default config using the mandatory `OUTPUT_FILE` key
 - `pyproject.toml`: package metadata for `mazegen`
 - `tests/test_mazegen.py`: invariant tests
 

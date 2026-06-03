@@ -1,7 +1,7 @@
 PYTHON ?= python3.10
 CONFIG ?= config.txt
 
-.PHONY: install run debug clean lint test package
+.PHONY: install run debug clean lint lint-strict test package
 
 install:
 	$(PYTHON) -m pip install --upgrade pip
@@ -20,6 +20,10 @@ clean:
 	find . -name '*.pyc' -type f -delete
 
 lint:
+	flake8 .
+	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+lint-strict:
 	flake8 .
 	mypy . --strict
 

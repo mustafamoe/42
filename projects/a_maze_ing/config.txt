@@ -11,7 +11,7 @@ INCLUDE_42=true
 EXTRA_OPENINGS=0.12
 
 # Output and terminal view
-OUTPUT=maze.txt
+OUTPUT_FILE=maze.txt
 SHOW_PATH=true
 WALL_COLOR=cyan
 INTERACTIVE=false

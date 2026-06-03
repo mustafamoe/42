@@ -56,13 +56,12 @@ def build_generator(
     """Create and generate a MazeGenerator from a parsed config."""
     width = parse_int(required(config, "WIDTH"), "WIDTH")
     height = parse_int(required(config, "HEIGHT"), "HEIGHT")
-    entry = parse_coord(config.get("ENTRY", "0,0"), "ENTRY")
-    default_exit = f"{width - 1},{height - 1}"
-    exit_cell = parse_coord(config.get("EXIT", default_exit), "EXIT")
+    entry = parse_coord(required(config, "ENTRY"), "ENTRY")
+    exit_cell = parse_coord(required(config, "EXIT"), "EXIT")
     seed = seed_override
     if seed is None:
         seed = parse_seed(config.get("SEED", "42"))
-    perfect = parse_bool(config.get("PERFECT", "true"), "PERFECT")
+    perfect = parse_bool(required(config, "PERFECT"), "PERFECT")
     include_pattern = parse_bool(
         config.get("INCLUDE_42", "true"),
         "INCLUDE_42",
@@ -134,7 +133,7 @@ def parse_coord(value: str, key: str) -> Coord:
 
 def output_path(config: Config, config_path: Path) -> Path:
     """Return the configured output path."""
-    path = Path(config.get("OUTPUT", "maze.txt"))
+    path = Path(required(config, "OUTPUT_FILE"))
     if not path.is_absolute():
         path = config_path.parent / path
     return path
