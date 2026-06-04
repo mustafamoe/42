@@ -100,7 +100,7 @@ path = solver.solve(maze, (0,0), (9,9))
 
 ## Team and Project Management
 * **Roles**: 
-  * *syedahamed / adkhan*: Co-developed the bitmask grid representations, TUI interface, solver algorithms, and project architecture.
+  * *mal-hall / idamadou*: Co-developed the bitmask grid representations, TUI interface, solver algorithms, and project architecture.
 * **Planning**: We anticipated starting with a simple 2D array representation but quickly shifted to bitmasks for efficiency. The architecture evolved from a single script to a modular `src/` layout to satisfy reusability requirements.
 * **What worked well**: The bitwise operations made cell lookups extremely fast and lightweight.
 * **What could be improved**: Early on, tight coupling between the generator and the renderer caused issues. Decoupling them into a proper MVC pattern improved the codebase significantly.
