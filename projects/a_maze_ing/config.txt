@@ -6,14 +6,12 @@ EXIT=19,14
 
 # Generation
 SEED=42
-PERFECT=true
+PERFECT=false
 INCLUDE_42=true
-ADD_42_PATTERN=true
-EXTRA_OPENINGS=0.12
 
 # Output and terminal view
 OUTPUT_FILE=maze.txt
 DISPLAY=terminal
-SHOW_PATH=true
+SHOW_PATH=false
 WALL_COLOR=cyan
 INTERACTIVE=true

@@ -13,4 +13,11 @@ authors = [
 ]
 
 [tool.setuptools]
-py-modules = ["mazegen"]
+py-modules = [
+    "a_maze_ing",
+    "maze_config",
+    "maze_interactive",
+    "maze_output",
+    "maze_render",
+    "mazegen",
+]

@@ -60,8 +60,6 @@ class MazeGenerator:
         entry: Coord = (0, 0),
         exit_cell: Coord | None = None,
         seed: int | None = None,
-        perfect: bool = True,
-        extra_openings: float = 0.12,
         include_pattern: bool = True,
     ) -> None:
         """Store maze parameters and validate their basic shape."""
@@ -74,8 +72,6 @@ class MazeGenerator:
             else (width - 1, height - 1)
         )
         self.seed = seed
-        self.perfect = perfect
-        self.extra_openings = extra_openings
         self.include_pattern = include_pattern
 
         self.warnings: list[str] = []
@@ -103,8 +99,6 @@ class MazeGenerator:
             )
 
         self._carve_perfect_maze(rng, available)
-        if not self.perfect:
-            self._add_extra_openings(rng, available)
 
         self._close_pattern_cells()
         self._close_external_borders()
@@ -159,8 +153,6 @@ class MazeGenerator:
         """Reject invalid maze dimensions and coordinates."""
         if self.width < 2 or self.height < 2:
             raise ValueError("width and height must be at least 2")
-        if not 0.0 <= self.extra_openings <= 1.0:
-            raise ValueError("extra_openings must be between 0 and 1")
         if not self._inside(self.entry):
             raise ValueError("entry coordinate is outside the maze")
         if not self._inside(self.exit):
@@ -269,37 +261,6 @@ class MazeGenerator:
         if len(visited) != len(available):
             raise ValueError("maze parameters create isolated open cells")
 
-    def _add_extra_openings(
-        self,
-        rng: Random,
-        available: set[Coord],
-    ) -> None:
-        """Open extra walls while preventing any 3x3 open rooms."""
-        candidates: list[tuple[Coord, Coord, str]] = []
-        for coord in available:
-            for neighbor, name in self._grid_neighbors(coord):
-                if neighbor not in available:
-                    continue
-                if name not in ("E", "S"):
-                    continue
-                if self._has_wall_between(coord, neighbor, name):
-                    candidates.append((coord, neighbor, name))
-
-        rng.shuffle(candidates)
-        target = int(len(candidates) * self.extra_openings)
-        if self.extra_openings > 0.0 and candidates:
-            target = max(1, target)
-
-        opened = 0
-        for coord, neighbor, name in candidates:
-            if opened >= target:
-                break
-            self._open_wall(coord, neighbor, name)
-            if self._has_open_area_3x3():
-                self._close_wall(coord, neighbor, name)
-                continue
-            opened += 1
-
     def _grid_neighbors(self, coord: Coord) -> list[tuple[Coord, str]]:
         """Return in-bounds orthogonal neighbors with direction names."""
         result: list[tuple[Coord, str]] = []
@@ -323,29 +284,6 @@ class MazeGenerator:
         self._walls[y][x] &= ~wall
         self._walls[ny][nx] &= ~opposite
 
-    def _close_wall(self, coord: Coord, neighbor: Coord, name: str) -> None:
-        """Restore the wall between two adjacent cells."""
-        x, y = coord
-        nx, ny = neighbor
-        _dx, _dy, wall, opposite = DIRECTIONS[name]
-        self._walls[y][x] |= wall
-        self._walls[ny][nx] |= opposite
-
-    def _has_wall_between(
-        self,
-        coord: Coord,
-        neighbor: Coord,
-        name: str,
-    ) -> bool:
-        """Return whether the named wall between two cells is closed."""
-        x, y = coord
-        nx, ny = neighbor
-        _dx, _dy, wall, opposite = DIRECTIONS[name]
-        return bool(
-            self._walls[y][x] & wall
-            and self._walls[ny][nx] & opposite
-        )
-
     def _close_pattern_cells(self) -> None:
         """Force every pattern cell and its shared edges closed."""
         for x, y in self.pattern_cells:
@@ -364,39 +302,6 @@ class MazeGenerator:
         for y in range(self.height):
             self._walls[y][0] |= WEST
             self._walls[y][self.width - 1] |= EAST
-
-    def _has_open_area_3x3(self) -> bool:
-        """Return whether any 3x3 group has all internal walls open."""
-        if self.width < 3 or self.height < 3:
-            return False
-
-        for top in range(self.height - 2):
-            for left in range(self.width - 2):
-                if self._window_contains_pattern(left, top):
-                    continue
-                if self._window_is_open(left, top):
-                    return True
-        return False
-
-    def _window_contains_pattern(self, left: int, top: int) -> bool:
-        """Return whether a 3x3 window contains a pattern cell."""
-        for y in range(top, top + 3):
-            for x in range(left, left + 3):
-                if (x, y) in self.pattern_cells:
-                    return True
-        return False
-
-    def _window_is_open(self, left: int, top: int) -> bool:
-        """Return whether a 3x3 window has no internal walls."""
-        for y in range(top, top + 3):
-            for x in range(left, left + 2):
-                if self._walls[y][x] & EAST:
-                    return False
-        for y in range(top, top + 2):
-            for x in range(left, left + 3):
-                if self._walls[y][x] & SOUTH:
-                    return False
-        return True
 
     def _find_shortest_path(self) -> list[str]:
         """Find a shortest path from entry to exit with BFS."""

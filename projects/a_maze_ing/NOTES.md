@@ -18,27 +18,30 @@ Cell wall bits:
 The generator starts with every wall closed, then uses randomized depth-first
 search to carve a spanning tree through all non-pattern cells.
 
-`PERFECT=true` keeps the spanning tree, so there is exactly one path between
-any two open cells.
-
-`PERFECT=false` adds extra openings while rejecting moves that create a fully
-open `3x3` area.
+The carved spanning tree has exactly one path between any two open cells.
 
 The 42 shape is made of fully closed cells. It is omitted with a warning when
 the maze is too small or placement would isolate open cells.
 
 ## Files
 
-- `a_maze_ing.py`: config parsing, output file, terminal renderer, interaction
-- `mazegen.py`: reusable generator class
+- `a_maze_ing.py`: small command-line entrypoint
+- `maze_config.py`: config parsing and generator construction
+- `maze_interactive.py`: terminal menu commands
+- `maze_output.py`: output file formatting
+- `maze_render.py`: terminal ASCII renderer and wall colors
+- `mazegen.py`: reusable generator class and maze algorithms
+- `visualizer.html`: browser animation of the randomized DFS backtracking
+  generator
 - `config.txt`: default config using the mandatory `OUTPUT_FILE` key
 - `pyproject.toml`: package metadata for `mazegen`
-- `tests/test_mazegen.py`: invariant tests
+- `tests/test_cli_modules.py`: smoke tests for the split CLI helpers
 
 ## Commands
 
 ```text
 python3.10 a_maze_ing.py config.txt
+open visualizer.html
 make run
 make lint
 make test
