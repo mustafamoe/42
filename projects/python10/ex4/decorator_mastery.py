@@ -40,18 +40,18 @@ def retry_spell(
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            for attempt in range(1, max_attempts + 1):
+            for attempt in range(max_attempts):
                 try:
                     return func(*args, **kwargs)
                 except Exception:
-                    if attempt == max_attempts:
+                    if attempt == max_attempts - 1:
                         return (
                             "Spell casting failed after "
                             f"{max_attempts} attempts"
                         )
                     print(
                         "Spell failed, retrying... "
-                        f"(attempt {attempt}/{max_attempts})"
+                        f"(attempt {attempt + 1}/{max_attempts})"
                     )
             return "Spell casting failed after 0 attempts"
 
