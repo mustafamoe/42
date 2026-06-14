@@ -3,111 +3,119 @@
 # A-Maze-ing
 
 ## Description
-A-Maze-ing is a highly efficient maze generator and solver built in Python. The goal of this project is to create a robust, modular, and reusable application capable of generating mathematically perfect mazes, exporting them, and finding optimal solutions from entry to exit points. By relying on bitmask representations for cell walls, the program achieves high performance while keeping memory overhead low.
 
-## Instructions
+A-Maze-ing is a Python maze generator and terminal renderer. It reads a config file, generates a connected maze, writes the maze as hexadecimal wall masks, and can print the shortest path from entry to exit.
 
-### Installation
-We use `uv` for fast dependency management, and provide a `Makefile` for ease of use.
-1. Make sure you have python >= 3.12 installed.
-2. Install the necessary dependencies (optional, mostly for dev tools):
-   ```bash
-   make install
-   ```
+The maze uses bitmasks for walls:
 
-### Execution
-You can run the main program using the Makefile, which defaults to reading from `config.txt`:
+* North: `1`
+* East: `2`
+* South: `4`
+* West: `8`
+
+## Installation
+
+Python 3.10 or newer is required. Optional development tools can be installed with:
+
 ```bash
-make run
+make install
 ```
-Or you can run it directly:
+
+## Execution
+
+Run with the provided config file:
+
 ```bash
 python3 a_maze_ing.py config.txt
 ```
 
-
-## Resources
-* **Recursive Backtracking**: [Wikipedia - Maze generation algorithms](https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker)
-* **A* Pathfinding**: [Red Blob Games - Introduction to A*](https://www.redblobgames.com/pathfinding/a-star/introduction.html)
-* **AI Usage**: Artificial Intelligence (Google Antigravity SDK) was used extensively in pair-programming to help refactor the codebase for modularity, debug bitmask logic, heavily optimize the A* and BFS solvers to reduce Python function-call overhead, and to generate the `pyproject.toml` packaging configuration for our standalone module.
-
-## Config File Structure
-The configuration file uses a simple `KEY=VALUE` format. Comments are prefixed with `#`.
-* `WIDTH` / `HEIGHT`: Dimensions of the maze (integers).
-* `ENTRY` / `EXIT`: Starting and ending coordinates formatted as `x,y`.
-* `OUTPUT_FILE`: Path to export the textual representation of the maze.
-* `PERFECT`: `True` for a maze with no loops (one unique path).
-* `SEED`: (Optional) Integer seed for reproducible random generation.
-* `ALGORITHM`: Generation algorithm (e.g., `backtracking`).
-* `DISPLAY`: Display mode (`terminal`).
-* `ANIMATE_GENERATION`: `True` to watch the maze generate in real-time.
-* `GENERATION_DELAY`: Float representing seconds to delay between animation frames.
-* `INCLUDE_42`: `True` to embed the '42' logo within the maze walls.
-* `SOLVER`: Pathfinding algorithm. Accepts `astar`, `bfs`, or `compare` (which runs both and benchmarks them).
-
-## Maze Generation Algorithm
-We chose the **Recursive Backtracking** algorithm.
-* **Why we chose it**: It is elegant, simple to implement using a stack, and generates mazes with long, winding corridors ("high river factor") which look visually appealing and are fun to solve. It also guarantees that every cell is visited and that a path exists between any two points.
-
-## Reusable Code (mazegen package)
-The maze generation and solving logic is strictly decoupled from the CLI and UI, located in the `src/mazegen/` module. This module has been packaged into `mazegen-0.1.0-py3-none-any.whl` (found at the root of the repo) which can be installed in any future project.
-
-### Testing Reusability (Proving it works!)
-To evaluate and prove that the package is fully decoupled and reusable, you can install the built `.whl` file in an entirely separate project:
+Or through the Makefile:
 
 ```bash
-# 1. Leave the repository and create a new dummy project folder
-cd /tmp
-mkdir test_maze_project
-cd test_maze_project
-
-# 2. Create a fresh virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# 3. Install the package we just built (replace path with your actual repo path)
-pip install /path/to/A_maze_ing_The_Final/mazegen-0.1.0-py3-none-any.whl
-# Or if using uv: uv pip install /path/to/A_maze_ing_The_Final/mazegen-0.1.0-py3-none-any.whl
-
-# 4. Create a test script using the package
-cat << 'EOF' > test.py
-from mazegen import MazeGenerator
-generator = MazeGenerator(width=5, height=5)
-maze = generator.generate()
-print(f"Success! Generated a {maze.width}x{maze.height} maze from an external project!")
-EOF
-
-# 5. Run it!
-python3 test.py
+make run
 ```
 
-**Usage Example:**
+## Config File Structure
+
+The configuration file uses one `KEY=VALUE` pair per line. Lines starting with `#` are comments.
+
+Mandatory keys:
+
+* `WIDTH`: maze width in cells.
+* `HEIGHT`: maze height in cells.
+* `ENTRY`: start coordinate as `x,y`.
+* `EXIT`: exit coordinate as `x,y`.
+* `OUTPUT_FILE`: output file path.
+* `PERFECT`: `true` for exactly one path from entry to exit, `false` to open one extra wall and allow a loop.
+
+Optional keys:
+
+* `SEED`: integer seed for reproducible mazes, or `random`.
+* `INCLUDE_42`: `true` to draw the `42` pattern with closed cells when the maze is large enough.
+* `DISPLAY`: only `terminal` is supported.
+* `SHOW_PATH`: `true` to show the shortest path in the terminal output.
+* `WALL_COLOR`: one of `plain`, `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, or `white`.
+* `INTERACTIVE`: `true` to show the terminal menu when stdin is interactive.
+
+## Maze Generation Algorithm
+
+The generator uses randomized depth-first search with a stack, often called recursive backtracking.
+
+It starts with all walls closed. Each time it moves to an unvisited neighbor, it removes the wall between the current cell and that neighbor. If a cell has no unvisited neighbors, the stack backtracks to an earlier cell.
+
+For `PERFECT=true`, this creates a spanning tree, so there is exactly one path between any two open cells. For `PERFECT=false`, the generator opens one extra wall after the perfect maze is carved, creating at least one loop.
+
+## Reusable Code
+
+The reusable generator lives in `mazegen.py`. It can be imported directly or installed from the built `mazegen-0.1.0-py3-none-any.whl` package.
+
+Example:
+
 ```python
-from mazegen import MazeGenerator, BFSSolver, E
+from mazegen import EAST
+from mazegen import MazeGenerator
 
-# 1. Instantiate the generator and generate a 10x10 perfect maze
-generator = MazeGenerator(width=10, height=10, seed=42)
-maze = generator.generate()
+generator = MazeGenerator(width=10, height=10, seed=42).generate()
 
-# 2. Access the generated structure (bitmask walls)
-if maze.grid[0][0].walls & E:
-    print("East wall is present at 0,0")
+rows = generator.to_hex_rows()
+path = generator.solution_path()
+coords = generator.solution_coordinates()
 
-# 3. Access a solution
-solver = BFSSolver()
-path = solver.solve(maze, (0,0), (9,9))
+if generator.cell_value((0, 0)) & EAST:
+    print("East wall is closed at 0,0")
+
+print(rows)
+print(path)
+print(coords)
 ```
+
+## Project Files
+
+* `a_maze_ing.py`: command-line entrypoint.
+* `maze_config.py`: config loading and validation.
+* `maze_output.py`: output file writer.
+* `maze_render.py`: terminal ASCII renderer.
+* `maze_interactive.py`: optional terminal menu.
+* `mazegen.py`: reusable maze generator.
+* `visualizer.html`: browser visualization of the backtracking algorithm.
+
+## Features
+
+* Reproducible random generation with `SEED`.
+* Perfect and non-perfect maze modes through `PERFECT`.
+* Shortest path output.
+* Terminal rendering with optional path display and wall colors.
+* Optional visible `42` pattern using fully closed cells.
+* Installable `mazegen` package files.
+
+## Resources
+
+* **Recursive Backtracking**: [Wikipedia - Maze generation algorithms](https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker)
 
 ## Team and Project Management
-* **Roles**: 
-  * *mal-hall / idamadou*: Co-developed the bitmask grid representations, TUI interface, solver algorithms, and project architecture.
-* **Planning**: We anticipated starting with a simple 2D array representation but quickly shifted to bitmasks for efficiency. The architecture evolved from a single script to a modular `src/` layout to satisfy reusability requirements.
-* **What worked well**: The bitwise operations made cell lookups extremely fast and lightweight.
-* **What could be improved**: Early on, tight coupling between the generator and the renderer caused issues. Decoupling them into a proper MVC pattern improved the codebase significantly.
-* **Tools used**: `uv` (package management), `ruff` and `flake8` (linting), `mypy` (static typing), and a standard `Makefile` for execution shortcuts.
 
-## Advanced Features
-* **Benchmarking (`SOLVER=compare`)**: Runs both A* and BFS simultaneously, measuring path length, nodes explored, and execution time in milliseconds to declare a winner.
-* **Interactive Gameplay**: When the maze renders in the terminal, you can choose "Play Maze" to navigate the generated maze yourself using WASD or Arrow keys!
-* **Color Schemes**: The terminal UI supports multiple themes including "Blood Red" and "Magenta" for the pathing display.
-* **42 Logo Embedding**: A special feature (`INCLUDE_42=True`) safely embeds the '42' logo within the generated maze walls without breaking the maze's solvability.
+* **Roles**: *mal-hall / idamadou* co-developed the maze generator, bitmask representation, terminal rendering, config handling, and packaging.
+* **Planning**: The project moved from a simple script toward smaller modules so the generator could be reused later.
+* **What worked well**: Bitmask walls kept the maze structure compact and easy to export as hexadecimal digits.
+* **What could be improved**: More automated tests could be added around config parsing, maze validity, and output formatting.
+* **Tools used**: Python, `Makefile`, `flake8`, `mypy`, and AI assistance during debugging and refactoring.
