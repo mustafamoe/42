@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: mazegen
-Version: 0.1.0
-Summary: Reusable maze generator using the recursive backtracker algorithm.
-Author: sahamad, team-member
-Requires-Python: >=3.10

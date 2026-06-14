@@ -1,1 +1,0 @@
-chec output_validtor if we can added it to makefile
