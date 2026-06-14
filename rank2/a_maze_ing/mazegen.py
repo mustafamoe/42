@@ -61,6 +61,7 @@ class MazeGenerator:
         exit_cell: Coord | None = None,
         seed: int | None = None,
         include_pattern: bool = True,
+        perfect: bool = True,
     ) -> None:
         """Store maze parameters and validate their basic shape."""
         self.width = width
@@ -73,6 +74,7 @@ class MazeGenerator:
         )
         self.seed = seed
         self.include_pattern = include_pattern
+        self.perfect = perfect
 
         self.warnings: list[str] = []
         self.pattern_cells: set[Coord] = set()
@@ -99,6 +101,8 @@ class MazeGenerator:
             )
 
         self._carve_perfect_maze(rng, available)
+        if not self.perfect:
+            self._open_extra_wall(rng, available)
 
         self._close_pattern_cells()
         self._close_external_borders()
@@ -144,7 +148,7 @@ class MazeGenerator:
         coords = [self.entry]
         current = self.entry
         for step in self._solution:
-            dx, dy = DIRECTIONS[step]
+            dx, dy, _wall, _opposite = DIRECTIONS[step]
             current = (current[0] + dx, current[1] + dy)
             coords.append(current)
         return coords
@@ -226,7 +230,7 @@ class MazeGenerator:
         queue: deque[Coord] = deque([self.entry])
         while queue:
             coord = queue.popleft()
-            for neighbor in self._grid_neighbors(coord):
+            for neighbor, _name in self._grid_neighbors(coord):
                 if neighbor not in available or neighbor in visited:
                     continue
                 visited.add(neighbor)
@@ -265,11 +269,25 @@ class MazeGenerator:
         """Return in-bounds orthogonal neighbors with direction names."""
         result: list[tuple[Coord, str]] = []
         x, y = coord
-        for name, (dx, dy) in DIRECTIONS.items():
+        for name, (dx, dy, _wall, _opposite) in DIRECTIONS.items():
             neighbor = (x + dx, y + dy)
             if self._inside(neighbor):
                 result.append((neighbor, name))
         return result
+
+    def _open_extra_wall(self, rng: Random, available: set[Coord]) -> None:
+        """Open one extra wall so non-perfect mazes can contain a loop."""
+        candidates = []
+        for coord in available:
+            x, y = coord
+            for name in ("E", "S"):
+                dx, dy, wall, _opposite = DIRECTIONS[name]
+                neighbor = (x + dx, y + dy)
+                if neighbor in available and self._walls[y][x] & wall:
+                    candidates.append((coord, neighbor, name))
+        if candidates:
+            coord, neighbor, name = rng.choice(candidates)
+            self._open_wall(coord, neighbor, name)
 
     def _inside(self, coord: Coord) -> bool:
         """Return whether a coordinate is inside the maze bounds."""
@@ -339,7 +357,7 @@ class MazeGenerator:
 
         result: list[tuple[Coord, str]] = []
         x, y = coord
-        for name, (dx, dy, wall) in DIRECTIONS.items():
+        for name, (dx, dy, wall, _opposite) in DIRECTIONS.items():
             neighbor = (x + dx, y + dy)
             if not self._inside(neighbor):
                 continue

@@ -40,7 +40,7 @@ def build_generator(
     seed = seed_override
     if seed is None:
         seed = parse_seed(config.get("SEED", "42"))
-    parse_bool(required(config, "PERFECT"), "PERFECT")
+    perfect = parse_bool(required(config, "PERFECT"), "PERFECT")
     include_pattern = parse_bool(
         config.get("INCLUDE_42", "true"),
         "INCLUDE_42",
@@ -51,6 +51,7 @@ def build_generator(
         entry=entry,
         exit_cell=exit_cell,
         seed=seed,
+        perfect=perfect,
         include_pattern=include_pattern,
     ).generate()
 
