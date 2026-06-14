@@ -703,7 +703,12 @@
       state.visited.add(keyOf(neighbor.x, neighbor.y));
       state.stack.push(neighbor);
       state.current = neighbor;
-      state.lastMove = { from: current, to: neighbor, kind: "carve" };
+      state.lastMove = {
+        from: current,
+        to: neighbor,
+        kind: "carve",
+        direction: choice.direction.name
+      };
       state.step += 1;
     }
 
@@ -935,6 +940,18 @@
       }
       if (state.phase === "carving") {
         parts.push(`current: ${keyOf(state.current.x, state.current.y)}`);
+        if (state.lastMove?.kind === "carve") {
+          parts.push(
+            `break ${state.lastMove.direction} wall: `
+            + `${keyOf(state.lastMove.from.x, state.lastMove.from.y)} -> `
+            + `${keyOf(state.lastMove.to.x, state.lastMove.to.y)}`
+          );
+        } else if (state.lastMove?.kind === "backtrack") {
+          parts.push(
+            `backtrack from: `
+            + `${keyOf(state.lastMove.from.x, state.lastMove.from.y)}`
+          );
+        }
       } else {
         parts.push(`solution length: ${Math.max(0, state.solution.length - 1)}`);
       }
