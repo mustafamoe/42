@@ -105,7 +105,7 @@
 
     .readout {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 1px;
       border-top: 2px solid var(--ink);
       background: var(--ink);
@@ -163,6 +163,10 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+    }
+
+    .button-grid .wide {
+      grid-column: 1 / -1;
     }
 
     button {
@@ -289,6 +293,9 @@
     .swatch.current { background: var(--red); }
     .swatch.stack { background: rgba(227, 164, 37, 0.65); }
     .swatch.pattern { background: var(--ink); }
+    .swatch.loop { background: var(--blue); }
+    .swatch.path-one { background: #2563eb; }
+    .swatch.path-two { background: #be185d; }
 
     .status {
       min-height: 70px;
@@ -371,6 +378,14 @@
             <span>Step</span>
             <strong id="stepMetric">0</strong>
           </div>
+          <div class="metric">
+            <span>Perfect</span>
+            <strong id="perfectMetric">ready</strong>
+          </div>
+          <div class="metric">
+            <span>Paths To Exit</span>
+            <strong id="pathsMetric">0</strong>
+          </div>
         </div>
       </div>
 
@@ -382,6 +397,7 @@
             <button id="stepButton" type="button">Step</button>
             <button id="resetButton" type="button">Reset</button>
             <button class="danger" id="finishButton" type="button">Finish</button>
+            <button class="wide" id="loopButton" type="button">Add Loop</button>
           </div>
         </section>
 
@@ -413,6 +429,14 @@
             42 Pattern
             <input id="patternInput" type="checkbox" checked>
           </label>
+          <label class="toggle">
+            PERFECT Config
+            <input id="perfectConfigInput" type="checkbox">
+          </label>
+          <label class="toggle">
+            Show Exit Paths
+            <input id="showPathsInput" type="checkbox" checked>
+          </label>
         </section>
 
         <section class="controls-section">
@@ -422,6 +446,9 @@
             <div class="legend-item"><span class="swatch stack"></span>Stack</div>
             <div class="legend-item"><span class="swatch current"></span>Current</div>
             <div class="legend-item"><span class="swatch pattern"></span>Pattern</div>
+            <div class="legend-item"><span class="swatch loop"></span>Extra Break</div>
+            <div class="legend-item"><span class="swatch path-one"></span>Path 1</div>
+            <div class="legend-item"><span class="swatch path-two"></span>Path 2</div>
           </div>
         </section>
 
@@ -447,6 +474,9 @@
       { name: "S", dx: 0, dy: 1, wall: SOUTH, opposite: NORTH },
       { name: "W", dx: -1, dy: 0, wall: WEST, opposite: EAST }
     ];
+    const UNIQUE_PASSAGE_DIRECTIONS = DIRECTIONS.filter((direction) => {
+      return direction.name === "E" || direction.name === "S";
+    });
     const PATTERN_ROWS = [
       "X X XXX",
       "X X   X",
@@ -461,15 +491,20 @@
     const stepButton = document.getElementById("stepButton");
     const resetButton = document.getElementById("resetButton");
     const finishButton = document.getElementById("finishButton");
+    const loopButton = document.getElementById("loopButton");
     const widthInput = document.getElementById("widthInput");
     const heightInput = document.getElementById("heightInput");
     const seedInput = document.getElementById("seedInput");
     const speedInput = document.getElementById("speedInput");
     const patternInput = document.getElementById("patternInput");
+    const perfectConfigInput = document.getElementById("perfectConfigInput");
+    const showPathsInput = document.getElementById("showPathsInput");
     const phaseMetric = document.getElementById("phaseMetric");
     const visitedMetric = document.getElementById("visitedMetric");
     const stackMetric = document.getElementById("stackMetric");
     const stepMetric = document.getElementById("stepMetric");
+    const perfectMetric = document.getElementById("perfectMetric");
+    const pathsMetric = document.getElementById("pathsMetric");
     const statusText = document.getElementById("statusText");
 
     let state;
@@ -636,6 +671,215 @@
       grid[neighbor.y][neighbor.x] &= ~direction.opposite;
     }
 
+    function closeWall(grid, cell, neighbor, direction) {
+      grid[cell.y][cell.x] |= direction.wall;
+      grid[neighbor.y][neighbor.x] |= direction.opposite;
+    }
+
+    function closedInternalWalls() {
+      const walls = [];
+      for (let y = 0; y < state.height; y += 1) {
+        for (let x = 0; x < state.width; x += 1) {
+          const fromKey = keyOf(x, y);
+          if (!state.available.has(fromKey)) {
+            continue;
+          }
+          for (const direction of UNIQUE_PASSAGE_DIRECTIONS) {
+            const neighbor = { x: x + direction.dx, y: y + direction.dy };
+            const toKey = keyOf(neighbor.x, neighbor.y);
+            if (!inside(neighbor.x, neighbor.y, state.width, state.height)) {
+              continue;
+            }
+            if (!state.available.has(toKey)) {
+              continue;
+            }
+            if ((state.grid[y][x] & direction.wall) !== 0) {
+              walls.push({
+                from: { x, y },
+                to: neighbor,
+                fromKey,
+                toKey,
+                direction
+              });
+            }
+          }
+        }
+      }
+      return walls;
+    }
+
+    function openRandomExtraWall(random) {
+      const candidates = closedInternalWalls();
+      if (candidates.length === 0) {
+        return null;
+      }
+
+      const candidate = candidates[Math.floor(random() * candidates.length)];
+      openWall(state.grid, candidate.from, candidate.to, candidate.direction);
+      return candidate;
+    }
+
+    function carvedPassages() {
+      const passages = [];
+      for (let y = 0; y < state.height; y += 1) {
+        for (let x = 0; x < state.width; x += 1) {
+          const fromKey = keyOf(x, y);
+          if (!state.available.has(fromKey)) {
+            continue;
+          }
+          for (const direction of UNIQUE_PASSAGE_DIRECTIONS) {
+            const to = { x: x + direction.dx, y: y + direction.dy };
+            const toKey = keyOf(to.x, to.y);
+            if (!inside(to.x, to.y, state.width, state.height)) {
+              continue;
+            }
+            if (!state.available.has(toKey)) {
+              continue;
+            }
+            if ((state.grid[y][x] & direction.wall) === 0) {
+              passages.push({
+                from: { x, y },
+                to,
+                fromKey,
+                toKey
+              });
+            }
+          }
+        }
+      }
+      return passages;
+    }
+
+    function componentCount(keys, passages) {
+      if (keys.size === 0) {
+        return 0;
+      }
+
+      const graph = new Map();
+      for (const key of keys) {
+        graph.set(key, []);
+      }
+      for (const passage of passages) {
+        if (!keys.has(passage.fromKey) || !keys.has(passage.toKey)) {
+          continue;
+        }
+        graph.get(passage.fromKey).push(passage.toKey);
+        graph.get(passage.toKey).push(passage.fromKey);
+      }
+
+      let components = 0;
+      const seen = new Set();
+      for (const key of keys) {
+        if (seen.has(key)) {
+          continue;
+        }
+        components += 1;
+        const queue = [key];
+        seen.add(key);
+        while (queue.length > 0) {
+          const current = queue.shift();
+          for (const neighbor of graph.get(current)) {
+            if (seen.has(neighbor)) {
+              continue;
+            }
+            seen.add(neighbor);
+            queue.push(neighbor);
+          }
+        }
+      }
+      return components;
+    }
+
+    function findExitPaths(limit = 2) {
+      const entry = { x: 0, y: 0 };
+      const exit = { x: state.width - 1, y: state.height - 1 };
+      const exitKey = keyOf(exit.x, exit.y);
+      const entryKey = keyOf(entry.x, entry.y);
+      if (!state.available.has(entryKey) || !state.available.has(exitKey)) {
+        return [];
+      }
+
+      const paths = [];
+      const path = [entryKey];
+      const seen = new Set([entryKey]);
+
+      function walk(cell) {
+        if (paths.length >= limit) {
+          return;
+        }
+        const cellKey = keyOf(cell.x, cell.y);
+        if (cellKey === exitKey) {
+          paths.push(path.slice());
+          return;
+        }
+
+        for (const direction of DIRECTIONS) {
+          if ((state.grid[cell.y][cell.x] & direction.wall) !== 0) {
+            continue;
+          }
+          const next = {
+            x: cell.x + direction.dx,
+            y: cell.y + direction.dy
+          };
+          const nextKey = keyOf(next.x, next.y);
+          if (!inside(next.x, next.y, state.width, state.height)) {
+            continue;
+          }
+          if (!state.available.has(nextKey) || seen.has(nextKey)) {
+            continue;
+          }
+          seen.add(nextKey);
+          path.push(nextKey);
+          walk(next);
+          path.pop();
+          seen.delete(nextKey);
+          if (paths.length >= limit) {
+            return;
+          }
+        }
+      }
+
+      walk(entry);
+      return paths;
+    }
+
+    function countPathsToExit(limit = 2) {
+      return findExitPaths(limit).length;
+    }
+
+    function perfectStats() {
+      const passages = carvedPassages();
+      const components = componentCount(state.available, passages);
+      const finalTarget = Math.max(0, state.available.size - 1);
+      const loops = Math.max(0, passages.length - state.available.size + components);
+      const exitPaths = findExitPaths(2);
+      const pathsToExit = exitPaths.length;
+      const connected = state.complete && state.visited.size === state.available.size
+        && components === 1;
+      const perfect = connected
+        && passages.length === finalTarget
+        && loops === 0
+        && pathsToExit === 1;
+
+      return {
+        passages: passages.length,
+        finalTarget,
+        loops,
+        pathsToExit,
+        exitPaths,
+        connected,
+        perfect
+      };
+    }
+
+    function boolText(value) {
+      return value ? "true" : "false";
+    }
+
+    function pathCountText(value) {
+      return value >= 2 ? "2+" : String(value);
+    }
+
     function resetState() {
       stopTimer();
       const width = clampInt(widthInput.value, 4, 60);
@@ -661,6 +905,7 @@
         stack: [entry],
         current: entry,
         lastMove: null,
+        extraLoop: null,
         step: 0,
         complete: false,
         solution: []
@@ -671,9 +916,57 @@
     }
 
     function completeCarving() {
+      let extraWall = null;
+      if (!perfectConfigInput.checked) {
+        extraWall = openRandomExtraWall(state.random);
+      }
       state.phase = "done";
       state.complete = true;
+      state.extraLoop = extraWall;
+      if (extraWall) {
+        state.lastMove = {
+          from: extraWall.from,
+          to: extraWall.to,
+          kind: "loop",
+          direction: extraWall.direction.name
+        };
+      }
       state.solution = findPath();
+    }
+
+    function addLoop() {
+      stopTimer();
+      if (!state.complete) {
+        finish();
+      }
+
+      const candidates = closedInternalWalls();
+      for (const candidate of candidates) {
+        openWall(state.grid, candidate.from, candidate.to, candidate.direction);
+        if (countPathsToExit(2) >= 2) {
+          state.phase = "looped";
+          state.extraLoop = candidate;
+          state.lastMove = {
+            from: candidate.from,
+            to: candidate.to,
+            kind: "loop",
+            direction: candidate.direction.name
+          };
+          draw();
+          updateUi();
+          return;
+        }
+        closeWall(state.grid, candidate.from, candidate.to, candidate.direction);
+      }
+
+      state.extraLoop = null;
+      state.lastMove = {
+        from: { x: 0, y: 0 },
+        to: { x: 0, y: 0 },
+        kind: "loop-failed"
+      };
+      draw();
+      updateUi();
     }
 
     function stepCarving() {
@@ -813,7 +1106,9 @@
       }
       const colors = {
         carve: "#bd3f3f",
-        backtrack: "#e3a425"
+        backtrack: "#e3a425",
+        loop: "#2867a8",
+        "loop-failed": "#2867a8"
       };
       const from = state.lastMove.from;
       const to = state.lastMove.to;
@@ -828,6 +1123,62 @@
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
+    }
+
+    function strokeKeyPath(layout, path, color, width, dash = []) {
+      if (path.length < 2) {
+        return;
+      }
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      path.forEach((key, index) => {
+        const cell = parseKey(key);
+        const x = layout.offsetX + (cell.x + 0.5) * layout.size;
+        const y = layout.offsetY + (cell.y + 0.5) * layout.size;
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawExitPaths(layout) {
+      if (!showPathsInput.checked || !state.complete) {
+        return;
+      }
+
+      const paths = findExitPaths(2);
+      const styles = [
+        {
+          color: "rgba(37, 99, 235, 0.88)",
+          width: Math.max(5, layout.size * 0.22),
+          dash: []
+        },
+        {
+          color: "rgba(190, 24, 93, 0.9)",
+          width: Math.max(4, layout.size * 0.15),
+          dash: [Math.max(5, layout.size * 0.28), Math.max(4, layout.size * 0.18)]
+        }
+      ];
+
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      paths.forEach((path, index) => {
+        const style = styles[index];
+        strokeKeyPath(layout, path, style.color, style.width, style.dash);
+      });
+      ctx.setLineDash([]);
+      ctx.restore();
     }
 
     function drawWalls(layout) {
@@ -903,10 +1254,6 @@
         fillCell(layout, parseKey(key), "rgba(15, 139, 114, 0.24)");
       }
 
-      for (const key of state.solution) {
-        fillCell(layout, parseKey(key), "rgba(40, 103, 168, 0.45)");
-      }
-
       for (const cell of state.stack) {
         fillCell(layout, cell, "rgba(227, 164, 37, 0.55)");
       }
@@ -919,6 +1266,7 @@
         fillCell(layout, state.current, "#bd3f3f");
       }
 
+      drawExitPaths(layout);
       drawMove(layout);
       drawEndpoints(layout);
       drawWalls(layout);
@@ -926,10 +1274,13 @@
 
     function updateUi() {
       const total = state.available.size;
+      const stats = perfectStats();
       phaseMetric.textContent = state.phase;
       visitedMetric.textContent = `${state.visited.size}/${total}`;
       stackMetric.textContent = String(state.stack.length);
       stepMetric.textContent = String(state.step);
+      perfectMetric.textContent = boolText(stats.perfect);
+      pathsMetric.textContent = pathCountText(stats.pathsToExit);
       playButton.textContent = timer ? "Pause" : "Play";
       stepButton.disabled = state.complete;
       finishButton.disabled = state.complete;
@@ -938,6 +1289,23 @@
       if (state.patternWarning) {
         parts.push(state.patternWarning);
       }
+      parts.push(`config PERFECT=${boolText(perfectConfigInput.checked)}`);
+      parts.push(`perfect: ${boolText(stats.perfect)}`);
+      parts.push(`paths to exit: ${pathCountText(stats.pathsToExit)}`);
+      if (state.complete && showPathsInput.checked) {
+        if (stats.pathsToExit >= 2) {
+          parts.push("blue path + magenta dashed path are two S-to-E solutions");
+        } else if (stats.pathsToExit === 1) {
+          parts.push("blue path is the only S-to-E solution found");
+        } else {
+          parts.push("no S-to-E solution found");
+        }
+      }
+      parts.push(
+        `connected: ${boolText(stats.connected)}; `
+        + `passages ${stats.passages}/${stats.finalTarget}; `
+        + `loops ${stats.loops}`
+      );
       if (state.phase === "carving") {
         parts.push(`current: ${keyOf(state.current.x, state.current.y)}`);
         if (state.lastMove?.kind === "carve") {
@@ -952,6 +1320,19 @@
             + `${keyOf(state.lastMove.from.x, state.lastMove.from.y)}`
           );
         }
+      } else if (state.extraLoop) {
+        parts.push(
+          `extra wall opened: `
+          + `${keyOf(state.extraLoop.from.x, state.extraLoop.from.y)} -> `
+          + `${keyOf(state.extraLoop.to.x, state.extraLoop.to.y)}`
+        );
+        if (stats.pathsToExit >= 2) {
+          parts.push("multiple paths to exit now exist");
+        } else {
+          parts.push("loop exists, but entry-to-exit route is still unique");
+        }
+      } else if (state.lastMove?.kind === "loop-failed") {
+        parts.push("no extra wall found that creates another exit path");
       } else {
         parts.push(`solution length: ${Math.max(0, state.solution.length - 1)}`);
       }
@@ -1016,8 +1397,18 @@
     stepButton.addEventListener("click", stepOnce);
     resetButton.addEventListener("click", resetState);
     finishButton.addEventListener("click", finish);
-
-    [widthInput, heightInput, seedInput, patternInput].forEach((input) => {
+    loopButton.addEventListener("click", addLoop);
+    showPathsInput.addEventListener("change", () => {
+      draw();
+      updateUi();
+    });
+    [
+      widthInput,
+      heightInput,
+      seedInput,
+      patternInput,
+      perfectConfigInput
+    ].forEach((input) => {
       input.addEventListener("change", resetState);
     });
 
