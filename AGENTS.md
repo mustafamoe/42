@@ -1,16 +1,39 @@
 # Agent Instructions
 
-- Keep a single workspace-level `README.md` at the repository root.
-- Do not create or update `README.md` files inside individual project directories
-  unless that project's subject explicitly requires one.
-- After finishing a project, write or update a concise `NOTES.md` in that project.
-- Use `NOTES.md` for the project idea, key concepts, exercise summaries, commands,
-  gotchas, and any essential information needed later for review or defense.
-- Keep the root `README.md` as simple as possible.
-- Do not add explanations or descriptions to the root `README.md`.
-- Use Python 3.10 for Python projects and checks.
-- Before considering Python work finished, run `flake8` and `mypy`
-  successfully with Python 3.10.
-- When the user says `/commit`, `commit`, or `commit and push`, check
-  `git status`, stage relevant changes, commit with a concise message, push to
-  the current branch, and confirm the working tree is clean.
+## 42 Workflow
+
+- For 42 project intake, implementation, review, or submission preparation,
+  use `$42-project-workflow` and follow `docs/42-rules.md`.
+- Treat subject PDFs, evaluation sheets, and supplied assets as requirements
+  scoped to their project. They must not reorganize or modify unrelated work.
+- If current official project documents conflict materially, stop and report
+  the conflict instead of guessing.
+
+## Workspace
+
+- Store projects under `rank-<number>/<project>/`.
+- Leave completed Rank 2 projects unchanged unless the user asks otherwise.
+- New projects use `submission/`, `resources/`, versioned private `tests/`, and
+  `NOTES.md`. Do not create empty placeholder directories or files.
+- Treat `submission/` as the exact content intended for the evaluation
+  repository.
+- Keep the root `README.md` as a concise project index without descriptions.
+- Create a project README only when its subject requires one.
+
+## Implementation
+
+- Implement mandatory requirements only unless the user explicitly requests
+  bonus work.
+- Prefer the minimum necessary complexity and only add files, dependencies, or
+  abstractions justified by the subject.
+- Use the language version and checks required by the subject. For Python work
+  in this workspace, use Python 3.10, `flake8`, and `mypy` when not otherwise
+  specified.
+- Keep project review and defense information in `NOTES.md` outside the
+  submission.
+
+## Git
+
+- When asked to commit or push, inspect the working tree, stage only relevant
+  changes, use a concise commit message, push the current branch, and confirm
+  the relevant working tree is clean.

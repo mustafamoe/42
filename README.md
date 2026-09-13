@@ -1,9 +1,8 @@
-# 42-projects
+# 42 Projects
 
-Projects from the 42 curriculum.
+## Rank 2
 
-## Projects
-
+- `a_maze_ing`
 - `push_swap`
 - `python00`
 - `python01`
@@ -15,4 +14,9 @@ Projects from the 42 curriculum.
 - `python07`
 - `python08`
 - `python09`
-- `a_maze_ing`
+- `python10`
+
+## Rank 3
+
+- `codexion`
+- `fly-in`
