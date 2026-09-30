@@ -1,0 +1,12 @@
+[
+  {"prompt": "Multiply 7 by 9."},
+  {"prompt": "What is the product of -2.5 and 4?"},
+  {"prompt": "Multiply 1234567890123 by 2."},
+  {"prompt": "Save the empty message: \"\"."},
+  {"prompt": "Save this exact message: \"café مرحبا 😀\"."},
+  {"prompt": "Save this exact message (between single quotes): 'She said \"hello\".'"},
+  {"prompt": "Set a reminder for the task 'water plants' after 3 days and send a notification."},
+  {"prompt": "Set a reminder for the task 'read' after 0 days without sending a notification."},
+  {"prompt": "Clear the setting by setting its value to null."},
+  {"prompt": "Check whether the service is healthy."}
+]

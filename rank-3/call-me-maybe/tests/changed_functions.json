@@ -1,0 +1,36 @@
+[
+  {
+    "name": "multiply_values",
+    "description": "Multiply two numbers and return their product.",
+    "parameters": {"left": {"type": "number"}, "right": {"type": "number"}},
+    "returns": {"type": "number"}
+  },
+  {
+    "name": "save_message",
+    "description": "Save a text message exactly as supplied, without changing its content.",
+    "parameters": {"text": {"type": "string"}},
+    "returns": {"type": "string"}
+  },
+  {
+    "name": "set_reminder",
+    "description": "Set a reminder for a task after a number of days, optionally sending a notification.",
+    "parameters": {
+      "task": {"type": "string"},
+      "days": {"type": "integer"},
+      "notify": {"type": "boolean"}
+    },
+    "returns": {"type": "boolean"}
+  },
+  {
+    "name": "clear_setting",
+    "description": "Clear a setting by assigning null to its value.",
+    "parameters": {"value": {"type": "null"}},
+    "returns": {"type": "null"}
+  },
+  {
+    "name": "check_status",
+    "description": "Check whether the service is healthy. Takes no arguments.",
+    "parameters": {},
+    "returns": {"type": "boolean"}
+  }
+]

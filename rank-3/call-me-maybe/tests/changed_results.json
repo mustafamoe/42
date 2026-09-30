@@ -1,0 +1,77 @@
+[
+  {
+    "prompt": "Multiply 7 by 9.",
+    "name": "multiply_values",
+    "parameters": {
+      "left": 7,
+      "right": 9
+    }
+  },
+  {
+    "prompt": "What is the product of -2.5 and 4?",
+    "name": "multiply_values",
+    "parameters": {
+      "left": -2.5,
+      "right": 4
+    }
+  },
+  {
+    "prompt": "Multiply 1234567890123 by 2.",
+    "name": "multiply_values",
+    "parameters": {
+      "left": 1234567890123,
+      "right": 2
+    }
+  },
+  {
+    "prompt": "Save the empty message: \"\".",
+    "name": "save_message",
+    "parameters": {
+      "text": ""
+    }
+  },
+  {
+    "prompt": "Save this exact message: \"caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00\".",
+    "name": "save_message",
+    "parameters": {
+      "text": "caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00"
+    }
+  },
+  {
+    "prompt": "Save this exact message (between single quotes): 'She said \"hello\".'",
+    "name": "save_message",
+    "parameters": {
+      "text": "She said \"hello\"."
+    }
+  },
+  {
+    "prompt": "Set a reminder for the task 'water plants' after 3 days and send a notification.",
+    "name": "set_reminder",
+    "parameters": {
+      "task": "water plants",
+      "days": 3,
+      "notify": true
+    }
+  },
+  {
+    "prompt": "Set a reminder for the task 'read' after 0 days without sending a notification.",
+    "name": "set_reminder",
+    "parameters": {
+      "task": "read",
+      "days": 0,
+      "notify": false
+    }
+  },
+  {
+    "prompt": "Clear the setting by setting its value to null.",
+    "name": "clear_setting",
+    "parameters": {
+      "value": null
+    }
+  },
+  {
+    "prompt": "Check whether the service is healthy.",
+    "name": "check_status",
+    "parameters": {}
+  }
+]
