@@ -42,11 +42,10 @@ typedef struct s_config
 
 typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
-typedef pthread_cond_t	t_cond;
 
 typedef struct s_heap
 {
-	t_coder	**data;
+	t_coder	*data[2];
 	int		size;
 }	t_heap;
 
@@ -64,16 +63,11 @@ struct s_coder
 	int			left;
 	int			right;
 	int			compiles;
-	int			done;
 	int			requesting;
-	int			granted;
-	int			activated;
-	int			bypassed;
 	long long	last_compile;
 	long long	deadline;
 	long long	sequence;
 	pthread_t	thread;
-	t_cond		ready;
 	t_sim		*sim;
 };
 
@@ -106,7 +100,6 @@ struct s_sim
 	int				life_cond_ready;
 	int				print_cond_ready;
 	int				dongles_ready;
-	int				coder_conds_ready;
 };
 
 int			parse_args(int argc, char **argv, t_config *config);
@@ -115,22 +108,22 @@ void		cleanup_sim(t_sim *sim);
 int			run_simulation(t_sim *sim);
 long long	now_ms(void);
 void		make_timespec(long long deadline, struct timespec *time);
+void		wait_changed(t_sim *sim, long long deadline);
 int			wait_until(t_sim *sim, long long deadline);
-void		wake_workers(t_sim *sim);
 void		stop_workers(t_sim *sim);
 void		heap_push(t_heap *heap, t_coder *coder, t_policy policy);
 t_coder		*heap_peek(t_heap *heap);
-void		heap_remove(t_heap *heap, t_coder *coder, t_policy policy);
+void		heap_pop(t_heap *heap);
 int			request_before(t_coder *a, t_coder *b, t_policy policy);
-int			requests_overlap(t_coder *a, t_coder *b);
-void		schedule_requests(t_sim *sim);
+void		queue_request(t_coder *coder);
 int			request_dongles(t_coder *coder);
 void		pair_mutex(t_coder *coder, int lock);
-int			pair_ready(t_coder *coder, long long now);
+int			pair_ready(t_coder *coder, long long *retry_at);
 void		release_dongles(t_coder *coder);
 int			log_event(t_sim *sim, int id, char *event);
 int			log_compile(t_coder *coder);
 void		log_death(t_sim *sim, int id);
+int			simulation_active(t_sim *sim, long long now);
 void		*coder_thread(void *data);
 void		*monitor_thread(void *data);
 

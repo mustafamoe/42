@@ -33,25 +33,16 @@ static int	create_threads(t_sim *sim)
 
 static void	queue_initial_requests(t_sim *sim)
 {
-	t_coder	*coder;
-	int		i;
+	int	i;
 
 	i = 0;
 	while (i < sim->config.coders)
 	{
-		coder = &sim->coders[i];
-		coder->deadline = LLONG_MAX;
-		coder->sequence = sim->next_sequence++;
-		coder->requesting = 1;
-		coder->bypassed = 0;
-		heap_push(&sim->dongles[coder->left].queue, coder,
-			sim->config.policy);
-		if (coder->left != coder->right)
-			heap_push(&sim->dongles[coder->right].queue, coder,
-				sim->config.policy);
-		i++;
+		queue_request(&sim->coders[i]);
+		i += 2;
+		if (i >= sim->config.coders && i % 2 == 0)
+			i = 1;
 	}
-	schedule_requests(sim);
 }
 
 static void	start_threads(t_sim *sim, int failed)

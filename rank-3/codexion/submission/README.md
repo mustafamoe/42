@@ -4,14 +4,11 @@
 
 ## Description
 
-Codexion simulates coders sharing pairs of cooling dongles. Each coder runs in
-its own thread, while a dedicated monitor detects burnout. A custom binary heap
-on every dongle orders pair requests by FIFO arrival or earliest burnout
-deadline.
+Codexion simulates coders sharing pairs of USB dongles with mandatory cooldowns.
+Each coder has a thread; a separate monitor detects burnout. Custom binary
+heaps arbitrate contested dongles using FIFO or Earliest Deadline First (EDF).
 
 ## Instructions
-
-Build and run:
 
 ```sh
 make
@@ -20,64 +17,66 @@ make
   dongle_cooldown scheduler
 ```
 
-All times are milliseconds. `scheduler` must be `fifo` or `edf`.
+All times are milliseconds. `scheduler` must be `fifo` or `edf`. Coder count,
+burnout time, and compile goal must be positive; other durations may be zero.
+The simulation ends at burnout or after every coder has completed the required
+number of compiles. Coders continue their cycles until that global stop, so an
+individual may compile more than the minimum.
 
 ## Resources
 
-The project subject, the POSIX documentation for pthread mutexes and condition
-variables, and standard binary-heap references were used. AI-assisted tools
-helped extract requirements, draft code and documentation, reason about
-scheduling edge cases, and prepare tests. Every resulting part was reviewed
-against the subject and kept small enough to explain directly.
+- The Codexion subject, version 1.5.
+- POSIX pthread documentation: mutexes, condition variables, thread creation,
+  and joining.
+- Binary min-heap insertion, root removal, and comparator invariants.
+- AI assisted with subject analysis, implementation and documentation drafts,
+  concurrency review, simplification, and private regression tests.
 
 ## Blocking cases handled
 
-A request is inserted into both adjacent dongle heaps with one immutable
-priority. Both dongles are granted atomically, so a coder never holds one while
-waiting for the other. This removes Coffman's hold-and-wait condition. Dongle
-mutexes are also taken by index, so their own lock order cannot form a cycle.
+A coder queues one request in each adjacent dongle heap. It can take the pair
+only when it is first in both heaps and both dongles are free and cooled down.
+There are no priority bypasses. FIFO compares enqueue sequence numbers; EDF
+compares burnout deadlines, then sequence numbers and coder IDs for ties.
 
-Only requests whose complete pair is physically available are eligible for an
-immediate grant. The best pending request receives a reservation barrier. At
-most one eligible overlapping request may bypass it before that barrier is
-enforced; under EDF, that bypass is allowed only when its compile and cooldown
-finish by the protected request's deadline. Eligible requests on disjoint pairs
-may still run. This avoids queue convoys, preserves parallel compiles, and puts
-a fixed bound on interference so a request cannot be bypassed forever.
+The pair is reserved atomically, breaking Coffman's hold-and-wait condition.
+Both queues use the same total order, preventing circular queue dependencies.
+Dongle mutexes are acquired in ascending index order to prevent mutex cycles.
 
-FIFO uses a monotonic arrival number. EDF uses the coder's burnout deadline,
-then arrival order and coder ID as deterministic tie-breakers. Released dongles
-store the exact end of their cooldown; a condition-variable timed wait prevents
-reuse before that instant. Every awakened requester asks the scheduler to
-re-evaluate before sleeping again, so an elapsed cooldown cannot become a lost
-wake-up.
+Initial requests are queued by alternating seats: odd IDs, then even IDs.
+For odd-sized rings, initial attempts are also staggered across compile and
+cooldown time. This spreads competing requests instead of starting two rigid
+waves. Subsequent requests are made immediately after refactoring and retain
+the required FIFO/EDF ordering.
 
-All coder threads reach a startup barrier before the simulation clock begins.
-Initial arbitration is prepared before that clock, then initial compile starts
-are released in a short chain. A dedicated monitor waits independently for the
-nearest burnout deadline. A priority print gate lets a detected burnout claim
-the next complete output line before queued coder messages. Invalid arguments,
-one coder, zero-duration activities, thread-creation failure, burnout, and
-successful completion are also handled.
+Release starts cooldown while the state and dongle mutexes are held and wakes
+waiting coders. A blocked coder either waits for a release or timed-waits until
+both cooldowns end. The wait uses the same availability result as the
+acquisition check, avoiding a missed cooldown expiration. Timed waits finish
+with short sleeps near the deadline to reduce OS timer-coalescing delays.
+
+The monitor independently waits for the nearest burnout deadline. Every log
+and compile completion also checks deadlines under the lifecycle mutex before
+changing state. An expired coder cannot reset its timer or complete the goal
+after burnout. Only the monitor prints the burnout message and stops workers.
+One coder takes the sole dongle once and waits for burnout.
 
 ## Thread synchronization mechanisms
 
-A simulation mutex protects all heaps, grants, request deadlines, compile
-counts, and the stop state. Each coder has a condition variable, allowing the
-scheduler to wake the exact coder whose request was granted or whose cooldown
-must be reconsidered. A shared condition variable handles startup, timed phase
-waits, and shutdown. Each dongle has its own mutex protecting its held state and
-cooldown timestamp. Pair locks are taken in ascending index order.
+`state_lock` protects queues, pair acquisition, compile counts, and startup.
+Each dongle also has its own mutex protecting ownership and cooldown. The
+shared `changed` condition wakes workers at startup, release, and shutdown;
+absolute timed waits handle activity durations and cooldowns.
 
-For example, a coder queues the same request on both dongles while holding the
-simulation mutex. The scheduler locks both dongles, removes that request from
-both heaps, and changes both held states as one transaction. The coder records
-its compile start at the same timestamp as its serialized compile message. A
-lifecycle condition immediately wakes the monitor whenever that timestamp or a
-completion state changes.
+`output_lock` protects compile-start timestamps, deadline checks, and a print
+gate. A printer claims the gate under the mutex, then releases the mutex during
+output. Other printers wait on `print_ready`, while the monitor can still
+inspect deadlines. The `life_changed` condition wakes the monitor after a
+compile start, completion, or detected burnout.
 
-The output mutex protects lifecycle data and a one-printer gate. Coders wait on
-that gate instead of forming a long queue while printing. At a deadline, the
-monitor marks death pending, waits for at most the current complete message,
-prints the burnout line, and wakes all workers to stop. This prevents mixed
-lines and prevents coder messages after burnout.
+For example, a compile start checks all deadlines and resets its timestamp
+under the same mutex. If a deadline has expired, new ordinary logs are blocked.
+The monitor waits for the current print batch, prints one burnout line, then
+wakes workers to stop. A compile batch contains two dongle lines and one compile
+line. Lock nesting is always state before output or dongle locks; the monitor
+releases output before acquiring state during shutdown.

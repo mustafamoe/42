@@ -17,15 +17,15 @@ static int	record_compile(t_coder *coder)
 	t_sim	*sim;
 
 	sim = coder->sim;
-	coder->compiles++;
-	if (coder->compiles == sim->config.goal)
+	if (coder->compiles < sim->config.goal)
 	{
-		coder->done = 1;
-		sim->completed++;
-		if (sim->completed == sim->config.coders)
-			sim->stopped = 1;
+		coder->compiles++;
+		if (coder->compiles == sim->config.goal)
+			sim->completed++;
 	}
-	return (coder->done || sim->stopped);
+	if (sim->completed == sim->config.coders)
+		sim->stopped = 1;
+	return (sim->stopped);
 }
 
 static int	finish_compile(t_coder *coder)
@@ -36,7 +36,7 @@ static int	finish_compile(t_coder *coder)
 	sim = coder->sim;
 	pthread_mutex_lock(&sim->state_lock);
 	pthread_mutex_lock(&sim->output_lock);
-	if (sim->stopped || sim->death_pending)
+	if (!simulation_active(sim, now_ms()))
 		done = 1;
 	else
 		done = record_compile(coder);
@@ -45,7 +45,7 @@ static int	finish_compile(t_coder *coder)
 		pthread_cond_broadcast(&sim->print_ready);
 	pthread_mutex_unlock(&sim->output_lock);
 	if (sim->stopped)
-		wake_workers(sim);
+		pthread_cond_broadcast(&sim->changed);
 	pthread_mutex_unlock(&sim->state_lock);
 	return (done);
 }
@@ -101,10 +101,14 @@ void	*coder_thread(void *data)
 	pthread_mutex_lock(&sim->state_lock);
 	sim->workers_ready++;
 	pthread_cond_broadcast(&sim->changed);
-	while ((!sim->started || !sim->monitor_armed || !coder->activated)
+	while ((!sim->started || !sim->monitor_armed)
 		&& !sim->stopped)
-		pthread_cond_wait(&coder->ready, &sim->state_lock);
+		pthread_cond_wait(&sim->changed, &sim->state_lock);
 	pthread_mutex_unlock(&sim->state_lock);
+	if (sim->config.coders > 1 && sim->config.coders % 2)
+		wait_until(sim, sim->start + coder->sequence
+			* (sim->config.compile + sim->config.cooldown)
+			/ (sim->config.coders / 2));
 	while (compile_cycle(coder))
 		;
 	return (NULL);

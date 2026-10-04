@@ -12,19 +12,25 @@
 
 #include "codexion.h"
 
-static int	find_dead_coder(t_sim *sim, long long now)
+int	simulation_active(t_sim *sim, long long now)
 {
 	int	i;
 
+	if (sim->stopped || sim->death_pending)
+		return (0);
 	i = 0;
 	while (i < sim->config.coders)
 	{
-		if (!sim->coders[i].done && now >= sim->coders[i].last_compile
-			+ sim->config.burnout)
-			return (sim->coders[i].id);
+		if (now >= sim->coders[i].last_compile + sim->config.burnout)
+		{
+			sim->death_pending = sim->coders[i].id;
+			pthread_cond_signal(&sim->life_changed);
+			pthread_cond_broadcast(&sim->print_ready);
+			return (0);
+		}
 		i++;
 	}
-	return (0);
+	return (1);
 }
 
 static long long	first_deadline(t_sim *sim)
@@ -38,7 +44,7 @@ static long long	first_deadline(t_sim *sim)
 	while (i < sim->config.coders)
 	{
 		candidate = sim->coders[i].last_compile + sim->config.burnout;
-		if (!sim->coders[i].done && candidate < deadline)
+		if (candidate < deadline)
 			deadline = candidate;
 		i++;
 	}
@@ -47,37 +53,21 @@ static long long	first_deadline(t_sim *sim)
 
 static void	arm_monitor(t_sim *sim)
 {
-	int	i;
-	int	grant_sent;
-
 	sim->monitor_ready = 1;
 	pthread_cond_broadcast(&sim->changed);
 	while (!sim->started && !sim->stopped)
 		pthread_cond_wait(&sim->changed, &sim->state_lock);
 	sim->monitor_armed = 1;
-	i = 0;
-	grant_sent = 0;
-	while (i < sim->config.coders)
-	{
-		if (sim->coders[i].activated && (!sim->coders[i].granted
-				|| !grant_sent))
-		{
-			pthread_cond_signal(&sim->coders[i].ready);
-			if (sim->coders[i].granted)
-				grant_sent = 1;
-		}
-		i++;
-	}
+	pthread_cond_broadcast(&sim->changed);
 }
 
-static void	burn_out(t_sim *sim, int id)
+static void	burn_out(t_sim *sim)
 {
-	sim->death_pending = 1;
 	while (sim->printing)
 		pthread_cond_wait(&sim->life_changed, &sim->output_lock);
 	sim->printing = 1;
 	pthread_mutex_unlock(&sim->output_lock);
-	log_death(sim, id);
+	log_death(sim, sim->death_pending);
 	pthread_mutex_lock(&sim->output_lock);
 	sim->printing = 0;
 	pthread_cond_broadcast(&sim->print_ready);
@@ -87,7 +77,7 @@ static void	burn_out(t_sim *sim, int id)
 	sim->stopped = 1;
 	pthread_cond_signal(&sim->life_changed);
 	pthread_mutex_unlock(&sim->output_lock);
-	wake_workers(sim);
+	pthread_cond_broadcast(&sim->changed);
 	pthread_mutex_unlock(&sim->state_lock);
 }
 
@@ -96,7 +86,6 @@ void	*monitor_thread(void *data)
 	t_sim			*sim;
 	struct timespec	time;
 	long long		deadline;
-	int				dead;
 
 	sim = (t_sim *)data;
 	pthread_mutex_lock(&sim->state_lock);
@@ -105,10 +94,9 @@ void	*monitor_thread(void *data)
 	pthread_mutex_unlock(&sim->state_lock);
 	while (!sim->stopped)
 	{
-		dead = find_dead_coder(sim, now_ms());
-		if (dead)
+		if (!simulation_active(sim, now_ms()))
 		{
-			burn_out(sim, dead);
+			burn_out(sim);
 			return (NULL);
 		}
 		deadline = first_deadline(sim);

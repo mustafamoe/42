@@ -39,6 +39,28 @@ These are the user's rules for work in this repository:
   and be explainable during evaluation.
 - Preserve exact required filenames, interfaces, output, and error behavior.
 
+## Project Isolation and Code Understanding
+
+Each `rank-<number>/<project>/` is an independent project. Its submission must
+build and run without any sibling project being present, using only its own
+files and dependencies permitted by its subject.
+
+- Do not copy or reuse implementations from another workspace project or add
+  cross-project includes, imports, linking, source paths, or symlinks. An
+  exception requires explicit user authorization and permission from the
+  current subject.
+- Resolve the active project from the user's request and ongoing conversation
+  before searching or explaining code. Keep symbol searches, call tracing,
+  code examples, and edits within that project unless the user explicitly
+  requests a broader comparison or task.
+- A missing symbol does not authorize a project switch. State that it is absent
+  from the active project and request the intended file or snippet before
+  explaining a similarly named symbol from elsewhere.
+- Distinguish subject requirements, intended behavior, and the active project's
+  actual implementation when teaching or reviewing it.
+- Shared workspace policies and tooling instructions may be consulted; they
+  do not authorize sharing project implementations or dependencies.
+
 ## Project Layout and Submission Hygiene
 
 New projects use this local structure:

@@ -1,0 +1,4 @@
+CompileFlags:
+  Add:
+    - "-I/Users/mustafamoe/Desktop/42/rank-3/codexion/submission/include"
+    - "-pthread"

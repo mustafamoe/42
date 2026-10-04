@@ -12,13 +12,7 @@
 
 #include "codexion.h"
 
-int	requests_overlap(t_coder *a, t_coder *b)
-{
-	return (a->left == b->left || a->left == b->right
-		|| a->right == b->left || a->right == b->right);
-}
-
-static void	add_request(t_coder *coder)
+void	queue_request(t_coder *coder)
 {
 	t_sim	*sim;
 
@@ -28,68 +22,55 @@ static void	add_request(t_coder *coder)
 	pthread_mutex_unlock(&sim->output_lock);
 	coder->sequence = sim->next_sequence++;
 	coder->requesting = 1;
-	coder->bypassed = 0;
 	heap_push(&sim->dongles[coder->left].queue, coder, sim->config.policy);
 	if (coder->left != coder->right)
 		heap_push(&sim->dongles[coder->right].queue, coder,
 			sim->config.policy);
 }
 
-static long long	next_schedule_time(t_sim *sim)
+static int	take_dongles(t_coder *coder, long long *retry_at)
 {
-	long long	deadline;
-	long long	now;
-	int			i;
+	t_dongle	*left;
+	t_dongle	*right;
 
-	deadline = LLONG_MAX;
-	now = now_ms();
-	i = 0;
-	while (i < sim->config.coders)
-	{
-		pthread_mutex_lock(&sim->dongles[i].lock);
-		if (!sim->dongles[i].held && sim->dongles[i].ready_at > now
-			&& sim->dongles[i].ready_at < deadline)
-			deadline = sim->dongles[i].ready_at;
-		pthread_mutex_unlock(&sim->dongles[i].lock);
-		i++;
-	}
-	return (deadline);
-}
-
-static void	wait_for_schedule(t_coder *coder)
-{
-	struct timespec	time;
-	long long		deadline;
-	t_sim			*sim;
-
-	sim = coder->sim;
-	deadline = next_schedule_time(sim);
-	if (deadline == LLONG_MAX)
-		pthread_cond_wait(&coder->ready, &sim->state_lock);
-	else
-	{
-		make_timespec(deadline, &time);
-		pthread_cond_timedwait(&coder->ready, &sim->state_lock, &time);
-	}
-	schedule_requests(sim);
+	left = &coder->sim->dongles[coder->left];
+	right = &coder->sim->dongles[coder->right];
+	*retry_at = 0;
+	if (heap_peek(&left->queue) != coder
+		|| heap_peek(&right->queue) != coder
+		|| !pair_ready(coder, retry_at))
+		return (0);
+	pair_mutex(coder, 1);
+	heap_pop(&left->queue);
+	if (left != right)
+		heap_pop(&right->queue);
+	left->held = 1;
+	right->held = 1;
+	coder->requesting = 0;
+	pair_mutex(coder, 0);
+	return (1);
 }
 
 int	request_dongles(t_coder *coder)
 {
-	t_sim	*sim;
-	int		granted;
+	t_sim		*sim;
+	long long	retry_at;
+	int			taken;
 
 	sim = coder->sim;
 	pthread_mutex_lock(&sim->state_lock);
 	if (sim->stopped)
 		return (pthread_mutex_unlock(&sim->state_lock), 0);
-	if (!coder->requesting && !coder->granted)
-		add_request(coder);
-	schedule_requests(sim);
-	while (!sim->stopped && !coder->granted)
-		wait_for_schedule(coder);
-	granted = coder->granted && !sim->stopped;
-	coder->granted = 0;
+	if (!coder->requesting)
+		queue_request(coder);
+	while (!sim->stopped && !take_dongles(coder, &retry_at))
+	{
+		if (retry_at)
+			wait_changed(sim, retry_at);
+		else
+			pthread_cond_wait(&sim->changed, &sim->state_lock);
+	}
+	taken = !sim->stopped;
 	pthread_mutex_unlock(&sim->state_lock);
-	return (granted);
+	return (taken);
 }

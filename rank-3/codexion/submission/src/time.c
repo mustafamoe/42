@@ -26,14 +26,32 @@ void	make_timespec(long long deadline, struct timespec *time)
 	time->tv_nsec = (deadline % 1000) * 1000000;
 }
 
-int	wait_until(t_sim *sim, long long deadline)
+void	wait_changed(t_sim *sim, long long deadline)
 {
 	struct timespec	time;
+	long long		remaining;
 
-	make_timespec(deadline, &time);
+	remaining = deadline - now_ms();
+	if (remaining <= 0)
+		return ;
+	if (remaining > 10)
+	{
+		make_timespec(deadline - 10, &time);
+		pthread_cond_timedwait(&sim->changed, &sim->state_lock, &time);
+	}
+	else
+	{
+		pthread_mutex_unlock(&sim->state_lock);
+		usleep(500);
+		pthread_mutex_lock(&sim->state_lock);
+	}
+}
+
+int	wait_until(t_sim *sim, long long deadline)
+{
 	pthread_mutex_lock(&sim->state_lock);
 	while (!sim->stopped && now_ms() < deadline)
-		pthread_cond_timedwait(&sim->changed, &sim->state_lock, &time);
+		wait_changed(sim, deadline);
 	if (sim->stopped)
 	{
 		pthread_mutex_unlock(&sim->state_lock);
@@ -43,19 +61,6 @@ int	wait_until(t_sim *sim, long long deadline)
 	return (1);
 }
 
-void	wake_workers(t_sim *sim)
-{
-	int	i;
-
-	i = 0;
-	while (i < sim->config.coders)
-	{
-		pthread_cond_signal(&sim->coders[i].ready);
-		i++;
-	}
-	pthread_cond_broadcast(&sim->changed);
-}
-
 void	stop_workers(t_sim *sim)
 {
 	pthread_mutex_lock(&sim->output_lock);
@@ -63,5 +68,5 @@ void	stop_workers(t_sim *sim)
 	pthread_cond_signal(&sim->life_changed);
 	pthread_cond_broadcast(&sim->print_ready);
 	pthread_mutex_unlock(&sim->output_lock);
-	wake_workers(sim);
+	pthread_cond_broadcast(&sim->changed);
 }

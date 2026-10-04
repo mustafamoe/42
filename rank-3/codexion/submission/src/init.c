@@ -43,9 +43,6 @@ static int	init_dongles(t_sim *sim)
 	i = 0;
 	while (i < sim->config.coders)
 	{
-		sim->dongles[i].queue.data = malloc(sizeof(t_coder *) * 2);
-		if (!sim->dongles[i].queue.data)
-			return (0);
 		if (pthread_mutex_init(&sim->dongles[i].lock, NULL) != 0)
 			return (0);
 		sim->dongles_ready++;
@@ -69,9 +66,6 @@ static int	init_coders(t_sim *sim)
 		sim->coders[i].left = i;
 		sim->coders[i].right = (i + 1) % sim->config.coders;
 		sim->coders[i].sim = sim;
-		if (pthread_cond_init(&sim->coders[i].ready, NULL) != 0)
-			return (0);
-		sim->coder_conds_ready++;
 		i++;
 	}
 	return (1);
@@ -82,16 +76,8 @@ void	cleanup_sim(t_sim *sim)
 	int	i;
 
 	i = 0;
-	while (sim->dongles && i < sim->config.coders)
-	{
-		if (i < sim->dongles_ready)
-			pthread_mutex_destroy(&sim->dongles[i].lock);
-		free(sim->dongles[i].queue.data);
-		i++;
-	}
-	i = 0;
-	while (sim->coders && i < sim->coder_conds_ready)
-		pthread_cond_destroy(&sim->coders[i++].ready);
+	while (i < sim->dongles_ready)
+		pthread_mutex_destroy(&sim->dongles[i++].lock);
 	free(sim->dongles);
 	free(sim->coders);
 	if (sim->cond_ready)

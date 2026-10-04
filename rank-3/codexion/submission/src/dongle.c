@@ -36,44 +36,43 @@ void	pair_mutex(t_coder *coder, int lock)
 		pthread_mutex_unlock(&sim->dongles[second].lock);
 }
 
-int	pair_ready(t_coder *coder, long long now)
+int	pair_ready(t_coder *coder, long long *retry_at)
 {
-	t_sim		*sim;
 	t_dongle	*left;
 	t_dongle	*right;
 	int			ready;
 
-	if (now >= coder->deadline)
-		return (0);
-	sim = coder->sim;
-	left = &sim->dongles[coder->left];
-	right = &sim->dongles[coder->right];
+	left = &coder->sim->dongles[coder->left];
+	right = &coder->sim->dongles[coder->right];
 	pair_mutex(coder, 1);
-	ready = !left->held && !right->held && left->ready_at <= now
-		&& right->ready_at <= now;
+	ready = !left->held && !right->held;
+	if (ready)
+	{
+		*retry_at = left->ready_at;
+		if (right->ready_at > *retry_at)
+			*retry_at = right->ready_at;
+		ready = *retry_at <= now_ms();
+	}
 	pair_mutex(coder, 0);
 	return (ready);
-}
-
-static void	free_dongle(t_dongle *dongle, long long ready_at)
-{
-	pthread_mutex_lock(&dongle->lock);
-	dongle->held = 0;
-	dongle->ready_at = ready_at;
-	pthread_mutex_unlock(&dongle->lock);
 }
 
 void	release_dongles(t_coder *coder)
 {
 	t_sim		*sim;
-	long long	ready_at;
+	t_dongle	*left;
+	t_dongle	*right;
 
 	sim = coder->sim;
-	ready_at = now_ms() + sim->config.cooldown;
+	left = &sim->dongles[coder->left];
+	right = &sim->dongles[coder->right];
 	pthread_mutex_lock(&sim->state_lock);
-	free_dongle(&sim->dongles[coder->left], ready_at);
-	if (coder->left != coder->right)
-		free_dongle(&sim->dongles[coder->right], ready_at);
-	schedule_requests(sim);
+	pair_mutex(coder, 1);
+	left->ready_at = now_ms() + sim->config.cooldown;
+	right->ready_at = left->ready_at;
+	left->held = 0;
+	right->held = 0;
+	pair_mutex(coder, 0);
+	pthread_cond_broadcast(&sim->changed);
 	pthread_mutex_unlock(&sim->state_lock);
 }
