@@ -1,7 +1,6 @@
 NAME := codexion
 CC := cc
 CFLAGS := -Wall -Wextra -Werror -pthread
-CPPFLAGS := -Iinclude
 
 SRCS := src/main.c src/parse.c src/init.c src/time.c src/heap.c \
 	src/request.c src/log.c src/coder.c \
@@ -14,7 +13,7 @@ $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 src/%.o: src/%.c include/codexion.h
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)

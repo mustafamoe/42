@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "codexion.h"
+#include "../include/codexion.h"
 
 static int	begin_log(t_sim *sim, t_coder *coder, long long *timestamp)
 {
