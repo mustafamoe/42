@@ -22,6 +22,13 @@ def main():
             ("save_message", {"text": "path C:\\temp"}),
             ("save_message", {"text": "first line\nsecond line"}),
         ]
+    elif mode == "private":
+        definitions = root / "moulinette/private/input/functions_definition.json"
+        prompts_path = root / "moulinette/private/input/function_calling_tests.json"
+        corrections = json.loads((
+            root / "moulinette/private/correction/function_calling_corrections.json"
+        ).read_text())
+        expected = [(item["name"], item["parameters"]) for item in corrections]
     elif mode == "changed":
         definitions = root / "changed_functions.json"
         prompts_path = root / "changed_prompts.json"

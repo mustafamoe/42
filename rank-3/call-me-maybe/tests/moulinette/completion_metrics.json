@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-10",
+  "source_sha256": {
+    "decoder.py": "441b988d2b9c60b93245d8a0aac07094c71221fb870c5d540d71d5415aabd55b",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "9f3488eaac696822f9f24579b0ccec12e3c116ef3ff46cd4bd4ca30c07ebe315",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "function_reasoning_token_limit": 48,
+  "copy_logit_bonus": 3.5,
+  "checks": {
+    "offline_tests": {
+      "passed": 47,
+      "total": 47
+    },
+    "flake8": "pass",
+    "required_mypy": "pass",
+    "original_sdk_and_data": "unchanged",
+    "application_class_and_import_audit": "pass",
+    "standalone_install_lint_help": "pass",
+    "standalone_inventory_files": 16,
+    "original_moulinette_sync_and_prepare_private": "pass",
+    "public_sdk_api_and_class_audit": "pass",
+    "all_submitted_functions_typed_and_documented": "pass",
+    "sampled_repeatability": {
+      "all_three_main_outputs_identical_to_prior_correct_runs": true,
+      "quoted_template_private_and_regression": "pass",
+      "case_and_derived_regex_public_and_regression": "pass"
+    }
+  },
+  "batches": {
+    "private": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "moulinette_correct": 11,
+      "moulinette_total": 11,
+      "seconds_including_load": 234.7,
+      "headroom_seconds": 65.3,
+      "output_sha256": "0214c8aef3fd859c370d9e38af5673e62d2c86725776c98332827b2db51b1603",
+      "output_identical_to_prior_fixed_run": true
+    },
+    "public": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "moulinette_correct": 11,
+      "moulinette_total": 11,
+      "seconds_including_load": 191.4,
+      "headroom_seconds": 108.6,
+      "output_sha256": "df5885323f33c907eba09126284076f48e0171e90517f5508da50269111f3b18",
+      "output_identical_to_prior_fixed_run": true
+    },
+    "changed": {
+      "calls": 10,
+      "schema_valid": 10,
+      "prompt_preserved": 10,
+      "semantic_correct": 10,
+      "semantic_total": 10,
+      "seconds_including_load": 167.6,
+      "headroom_seconds": 132.4,
+      "output_sha256": "c1f98cd473fd660208c336da5e67633e8b5206334c3f03fab7187fbe262359b9",
+      "output_identical_to_prior_fixed_run": true
+    }
+  },
+  "environment": {
+    "python": "3.10.20",
+    "hardware": "Apple M2 Pro / 16 GB",
+    "macos": "27.0",
+    "backend": "MPS",
+    "model": "Qwen/Qwen3-0.6B",
+    "offline_cached_inference": true,
+    "cache_seeded_from_existing_downloads": true
+  },
+  "regressions": {
+    "passed": 17,
+    "total": 17,
+    "expected_rejections_passed": 3,
+    "expected_rejections_total": 3,
+    "positive_semantic_correct": 14,
+    "positive_total": 14,
+    "positive_schema_valid": 14,
+    "source_hashes_match_final_code": true,
+    "known_failures": [],
+    "seconds_sum_including_load": 279.799
+  }
+}

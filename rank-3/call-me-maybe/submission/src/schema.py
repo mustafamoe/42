@@ -1,10 +1,11 @@
 """Validate the flat function schema, prompt files and generated calls."""
 
 import json
+import math
 from pathlib import Path
 from typing import Any, Literal, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 
 Scalar: TypeAlias = str | int | float | bool | None
 ScalarType: TypeAlias = Literal[
@@ -12,12 +13,48 @@ ScalarType: TypeAlias = Literal[
 ]
 
 
+def scalar_matches(value: Scalar, kind: ScalarType) -> bool:
+    """Check exact scalar types and finite numbers without coercion."""
+    types: dict[str, tuple[type, ...]] = {
+        "string": (str,), "number": (int, float), "integer": (int,),
+        "boolean": (bool,), "null": (type(None),),
+    }
+    return (type(value) in types[kind]
+            and (not isinstance(value, float) or math.isfinite(value)))
+
+
+def number_as_float(value: int) -> int | float:
+    """Use a float only when it preserves the integer's exact value."""
+    try:
+        converted = float(value)
+    except OverflowError:
+        return value
+    return converted if int(converted) == value else value
+
+
 class Parameter(BaseModel):
     """Describe a mandatory scalar argument, without coercing its type."""
 
-    model_config = ConfigDict(extra="forbid", strict=True)
+    model_config = ConfigDict(
+        extra="forbid", strict=True, allow_inf_nan=False
+    )
     type: ScalarType
     description: str = ""
+    enum: list[Scalar] | None = Field(default=None, min_length=1)
+
+    @model_validator(mode="after")
+    def validate_enum(self) -> "Parameter":
+        """Require every allowed value to satisfy the declared scalar type."""
+        if self.enum is not None and any(
+            not scalar_matches(value, self.type) for value in self.enum
+        ):
+            raise ValueError("Allowed values must match the parameter type")
+        return self
+
+    def accepts(self, value: Scalar) -> bool:
+        """Check the declared type and any predefined allowed values."""
+        return (scalar_matches(value, self.type)
+                and (self.enum is None or value in self.enum))
 
 
 class ReturnType(BaseModel):
@@ -107,10 +144,9 @@ def validate_call(call: Call, function: Function) -> None:
         raise ValueError("Generated function name does not match the schema")
     if call.parameters.keys() != function.parameters.keys():
         raise ValueError("Generated parameter keys do not match the schema")
-    types: dict[str, tuple[type, ...]] = {
-        "string": (str,), "number": (int, float), "integer": (int,),
-        "boolean": (bool,), "null": (type(None),),
-    }
     for name, parameter in function.parameters.items():
-        if type(call.parameters[name]) not in types[parameter.type]:
-            raise ValueError(f"Parameter {name!r} must be {parameter.type}")
+        if not parameter.accepts(call.parameters[name]):
+            raise ValueError(
+                f"Parameter {name!r} must match {parameter.type} "
+                "and its allowed values"
+            )

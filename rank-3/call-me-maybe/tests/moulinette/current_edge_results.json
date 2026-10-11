@@ -1,0 +1,26 @@
+[
+  {
+    "prompt": "",
+    "name": "check_status",
+    "parameters": {}
+  },
+  {
+    "prompt": "Please help me with it.",
+    "name": "check_status",
+    "parameters": {}
+  },
+  {
+    "prompt": "Save this exact message between markers. BEGIN path C:\\temp END",
+    "name": "save_message",
+    "parameters": {
+      "text": "BEGIN path C:\\temp END"
+    }
+  },
+  {
+    "prompt": "Save this exact message between markers. BEGIN first line\nsecond line END",
+    "name": "save_message",
+    "parameters": {
+      "text": "BEGIN first line\nsecond line END"
+    }
+  }
+]

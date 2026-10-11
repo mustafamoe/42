@@ -20,4 +20,9 @@
 
 - `call-me-maybe`
 - `codexion`
+- [exam](rank-3/exam/NOTES.md)
 - `fly-in`
+
+## Tools
+
+- [examshell](examshell/NOTES.md)

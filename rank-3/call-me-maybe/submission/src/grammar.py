@@ -41,6 +41,30 @@ class ScalarGrammar(BaseModel):
     kind: ScalarType
     delimiter: Literal[",", "}"]
     choices: tuple[bytes, ...] = ()
+    source: bytes | None = None
+    boundaries: frozenset[int] = frozenset()
+
+    def copied_prefix(self, body: bytes, complete: bool) -> bool:
+        """Match literal bytes only at source character boundaries."""
+        if self.source is None:
+            return True
+        start = self.source.find(body)
+        while start >= 0:
+            if (start in self.boundaries and (
+                not complete or start + len(body) in self.boundaries
+            )):
+                return True
+            start = self.source.find(body, start + 1)
+        return False
+
+    def copy_at_boundary(self, raw: bytes) -> bool:
+        """Identify a literal copy ending at a complete source character."""
+        state = self.status(raw)
+        return state >= 0 and (
+            state == 1
+            or self.complete(raw.strip(b" \t\r\n"))
+            or self.copied_prefix(raw.lstrip(b" \t\r\n")[1:], True)
+        )
 
     def status(self, raw: bytes) -> int:
         """Return -1 for invalid, 0 for unfinished, or 1 for complete bytes."""
@@ -64,8 +88,10 @@ class ScalarGrammar(BaseModel):
         if self.kind == "string":
             if not valid_utf8_prefix(raw):
                 return -1
-            if not raw or STRING_PREFIX.fullmatch(raw):
+            if not raw:
                 return 0
+            if STRING_PREFIX.fullmatch(raw):
+                return 0 if self.copied_prefix(raw[1:], False) else -1
             return 0 if self.complete(raw.rstrip(b" \t\r\n")) else -1
         prefix = INTEGER_PREFIX if self.kind == "integer" else NUMBER_PREFIX
         if prefix.fullmatch(raw):
@@ -76,7 +102,8 @@ class ScalarGrammar(BaseModel):
         """Check that a scalar is fully formed and finite before closure."""
         if self.kind == "string":
             return (bool(STRING_COMPLETE.fullmatch(raw))
-                    and valid_utf8_prefix(raw))
+                    and valid_utf8_prefix(raw)
+                    and self.copied_prefix(raw[1:-1], True))
         pattern = (INTEGER_COMPLETE if self.kind == "integer"
                    else NUMBER_COMPLETE)
         if not pattern.fullmatch(raw):

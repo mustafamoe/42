@@ -1,0 +1,1738 @@
+{
+  "rank": 3,
+  "title": "Rank 3 — Python",
+  "duration_seconds": 10800,
+  "grading_timeout_seconds": 10,
+  "scores": [
+    0,
+    16,
+    33,
+    50,
+    66,
+    83,
+    100
+  ],
+  "retry_delays_seconds": [
+    30,
+    150,
+    180,
+    330,
+    510,
+    840,
+    1350,
+    2190
+  ],
+  "exercises": [
+    {
+      "name": "bracket_validator",
+      "level": 1,
+      "function": "bracket_validator",
+      "filename": "py_bracket_validator.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "[a{b(c)}]"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "([)]"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "()[]{}"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "("
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ")"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "{[]}"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "((())"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "abc"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "[]]"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "{[()]}()"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "{[(])}"
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "name": "cryptic_sorter",
+      "level": 1,
+      "function": "cryptic_sorter",
+      "filename": "py_cryptic_sorter.py",
+      "preserve_inputs": true,
+      "forbidden_names": [
+        "sorted"
+      ],
+      "forbidden_attributes": [
+        "sort"
+      ],
+      "cases": [
+        {
+          "args": [
+            [
+              "plum",
+              "Fig",
+              "pear",
+              "a"
+            ]
+          ],
+          "expected": [
+            "a",
+            "Fig",
+            "pear",
+            "plum"
+          ]
+        },
+        {
+          "args": [
+            [
+              "bb",
+              "AA",
+              "aa",
+              "BB"
+            ]
+          ],
+          "expected": [
+            "AA",
+            "aa",
+            "bb",
+            "BB"
+          ]
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              ""
+            ]
+          ],
+          "expected": [
+            ""
+          ]
+        },
+        {
+          "args": [
+            [
+              "a",
+              "A",
+              "a",
+              "A"
+            ]
+          ],
+          "expected": [
+            "a",
+            "A",
+            "a",
+            "A"
+          ]
+        },
+        {
+          "args": [
+            [
+              "!",
+              "B",
+              "a",
+              "0"
+            ]
+          ],
+          "expected": [
+            "!",
+            "0",
+            "a",
+            "B"
+          ]
+        },
+        {
+          "args": [
+            [
+              "zz",
+              "a",
+              "BB",
+              "aa",
+              "b"
+            ]
+          ],
+          "expected": [
+            "a",
+            "b",
+            "aa",
+            "BB",
+            "zz"
+          ]
+        },
+        {
+          "args": [
+            [
+              "dog",
+              "cat",
+              "owl"
+            ]
+          ],
+          "expected": [
+            "cat",
+            "dog",
+            "owl"
+          ]
+        },
+        {
+          "args": [
+            [
+              "abc",
+              "ABC",
+              "Abc"
+            ]
+          ],
+          "expected": [
+            "abc",
+            "ABC",
+            "Abc"
+          ]
+        },
+        {
+          "args": [
+            [
+              "",
+              "z",
+              "",
+              "A"
+            ]
+          ],
+          "expected": [
+            "",
+            "",
+            "A",
+            "z"
+          ]
+        },
+        {
+          "args": [
+            [
+              "car",
+              "Car",
+              "bus",
+              "a"
+            ]
+          ],
+          "expected": [
+            "a",
+            "bus",
+            "car",
+            "Car"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "echo_validator",
+      "level": 2,
+      "function": "echo_validator",
+      "filename": "py_echo_validator.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "No lemon, no melon!"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "python"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "123!"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "A"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "Aa"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a1B2a"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a1b2c"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "Racecar"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a b a!"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "ab ba"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "ab"
+          ],
+          "expected": false
+        }
+      ]
+    },
+    {
+      "name": "mirror_matrix",
+      "level": 2,
+      "function": "mirror_matrix",
+      "filename": "py_mirror_matrix.py",
+      "preserve_inputs": true,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            [
+              [
+                2,
+                4,
+                6
+              ],
+              [
+                1,
+                3
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              6,
+              4,
+              2
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              []
+            ]
+          ],
+          "expected": [
+            []
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                7
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              7
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              2,
+              1
+            ],
+            [
+              4,
+              3
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [],
+              [
+                1,
+                2
+              ],
+              []
+            ]
+          ],
+          "expected": [
+            [],
+            [
+              2,
+              1
+            ],
+            []
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                -1,
+                -2
+              ],
+              [
+                0,
+                4,
+                9
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              -2,
+              -1
+            ],
+            [
+              9,
+              4,
+              0
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                1,
+                1,
+                1
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              1,
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "args": [
+            [
+              [
+                1
+              ],
+              [
+                2,
+                3,
+                4
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          ],
+          "expected": [
+            [
+              1
+            ],
+            [
+              4,
+              3,
+              2
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hidenp",
+      "level": 3,
+      "function": "hidenp",
+      "filename": "py_hidenp.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "cat",
+            "c1a2t"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "cta",
+            "cat"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "",
+            "abc"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "",
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            ""
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "aaaa",
+            "aaa"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "aa",
+            "aba"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "A",
+            "a"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "abc",
+            "abc"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            "ab"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a c",
+            "a-b c"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "xyz",
+            "xxyyzz"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "name": "inter",
+      "level": 3,
+      "function": "inter",
+      "filename": "py_inter.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "mississippi",
+            "simple"
+          ],
+          "expected": "misp"
+        },
+        {
+          "args": [
+            "abc",
+            "xyz"
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "",
+            "abc"
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "abc",
+            ""
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "banana",
+            "band"
+          ],
+          "expected": "ban"
+        },
+        {
+          "args": [
+            "cbacba",
+            "abc"
+          ],
+          "expected": "cba"
+        },
+        {
+          "args": [
+            "AAAa",
+            "a"
+          ],
+          "expected": "a"
+        },
+        {
+          "args": [
+            "a b!",
+            "! a"
+          ],
+          "expected": "a !"
+        },
+        {
+          "args": [
+            "aaaa",
+            "aa"
+          ],
+          "expected": "a"
+        },
+        {
+          "args": [
+            "123321",
+            "31"
+          ],
+          "expected": "13"
+        },
+        {
+          "args": [
+            "abc",
+            "abc"
+          ],
+          "expected": "abc"
+        }
+      ]
+    },
+    {
+      "name": "number_base_converter",
+      "level": 3,
+      "function": "number_base_converter",
+      "filename": "py_number_base_converter.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "1101",
+            2,
+            10
+          ],
+          "expected": "13"
+        },
+        {
+          "args": [
+            "2a",
+            16,
+            2
+          ],
+          "expected": "101010"
+        },
+        {
+          "args": [
+            "Z",
+            36,
+            10
+          ],
+          "expected": "35"
+        },
+        {
+          "args": [
+            "0",
+            10,
+            2
+          ],
+          "expected": "0"
+        },
+        {
+          "args": [
+            "0000",
+            2,
+            36
+          ],
+          "expected": "0"
+        },
+        {
+          "args": [
+            "00015",
+            10,
+            16
+          ],
+          "expected": "F"
+        },
+        {
+          "args": [
+            "255",
+            10,
+            16
+          ],
+          "expected": "FF"
+        },
+        {
+          "args": [
+            "FF",
+            16,
+            10
+          ],
+          "expected": "255"
+        },
+        {
+          "args": [
+            "101",
+            2,
+            2
+          ],
+          "expected": "101"
+        },
+        {
+          "args": [
+            "",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "2",
+            2,
+            10
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "G",
+            16,
+            10
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "12",
+            1,
+            10
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "12",
+            10,
+            37
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "-1",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "+1",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            " 1",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "1 ",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "1.0",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "ß",
+            36,
+            10
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "١",
+            10,
+            2
+          ],
+          "expected": "ERROR"
+        },
+        {
+          "args": [
+            "zz",
+            36,
+            10
+          ],
+          "expected": "1295"
+        }
+      ]
+    },
+    {
+      "name": "pattern_tracker",
+      "level": 3,
+      "function": "pattern_tracker",
+      "filename": "py_pattern_tracker.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "234"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "23x45"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "90"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "7"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "0123456789"
+          ],
+          "expected": 9
+        },
+        {
+          "args": [
+            "9876543210"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "112233"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "1a2b3"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "1212"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "001122"
+          ],
+          "expected": 2
+        },
+        {
+          "args": [
+            "١٢"
+          ],
+          "expected": 0
+        },
+        {
+          "args": [
+            "78901"
+          ],
+          "expected": 3
+        }
+      ]
+    },
+    {
+      "name": "anagram",
+      "level": 4,
+      "function": "anagram",
+      "filename": "py_anagram.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "rail safety",
+            "Fairy tales"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "hello",
+            "world"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "",
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "listen",
+            "silent"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "Triangle",
+            "Integral"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "Dormitory",
+            "Dirty Room"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            "abcc"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "aab",
+            "abb"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "   ",
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a!",
+            "!A"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "a\tb",
+            "ab"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "Aa",
+            "aa"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "name": "shadow_merge",
+      "level": 4,
+      "function": "shadow_merge",
+      "filename": "py_shadow_merge.py",
+      "preserve_inputs": true,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            [
+              0,
+              4,
+              8
+            ],
+            [
+              1,
+              3,
+              9
+            ]
+          ],
+          "expected": [
+            0,
+            1,
+            3,
+            4,
+            8,
+            9
+          ]
+        },
+        {
+          "args": [
+            [],
+            [
+              2,
+              5
+            ]
+          ],
+          "expected": [
+            2,
+            5
+          ]
+        },
+        {
+          "args": [
+            [],
+            []
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              1,
+              2
+            ],
+            []
+          ],
+          "expected": [
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              3,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            1,
+            1,
+            2,
+            3,
+            3
+          ]
+        },
+        {
+          "args": [
+            [
+              -5,
+              -1
+            ],
+            [
+              -4,
+              0
+            ]
+          ],
+          "expected": [
+            -5,
+            -4,
+            -1,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            [
+              4,
+              5,
+              6
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "args": [
+            [
+              4,
+              5,
+              6
+            ],
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        {
+          "args": [
+            [
+              0
+            ],
+            [
+              0
+            ]
+          ],
+          "expected": [
+            0,
+            0
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              3,
+              4,
+              11
+            ]
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            4,
+            10,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "name": "string_permutation_checker",
+      "level": 4,
+      "function": "string_permutation_checker",
+      "filename": "py_string_permutation_checker.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "a! b",
+            "b !a"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "Abc",
+            "abc"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "",
+            ""
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            "bca"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "abc",
+            "def"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a",
+            ""
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "aab",
+            "abb"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a b",
+            "ab"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a\tb",
+            "b\ta"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "!!a",
+            "!aa"
+          ],
+          "expected": false
+        },
+        {
+          "args": [
+            "a gentleman",
+            "elegant man"
+          ],
+          "expected": true
+        },
+        {
+          "args": [
+            "aA",
+            "Aa"
+          ],
+          "expected": true
+        }
+      ]
+    },
+    {
+      "name": "string_sculptor",
+      "level": 5,
+      "function": "string_sculptor",
+      "filename": "py_string_sculptor.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "GOOD DAY"
+          ],
+          "expected": "gOoD dAy"
+        },
+        {
+          "args": [
+            "ab12cd"
+          ],
+          "expected": "aB12cD"
+        },
+        {
+          "args": [
+            ""
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "hello"
+          ],
+          "expected": "hElLo"
+        },
+        {
+          "args": [
+            "Hello World"
+          ],
+          "expected": "hElLo wOrLd"
+        },
+        {
+          "args": [
+            "abc123def"
+          ],
+          "expected": "aBc123DeF"
+        },
+        {
+          "args": [
+            "Python3.9!"
+          ],
+          "expected": "pYtHoN3.9!"
+        },
+        {
+          "args": [
+            "  A  BC "
+          ],
+          "expected": "  a  bC "
+        },
+        {
+          "args": [
+            "a-b-c"
+          ],
+          "expected": "a-B-c"
+        },
+        {
+          "args": [
+            "a\tb"
+          ],
+          "expected": "a\tB"
+        },
+        {
+          "args": [
+            "123!"
+          ],
+          "expected": "123!"
+        },
+        {
+          "args": [
+            "a! bc"
+          ],
+          "expected": "a! bC"
+        }
+      ]
+    },
+    {
+      "name": "twist_sequence",
+      "level": 5,
+      "function": "twist_sequence",
+      "filename": "py_twist_sequence.py",
+      "preserve_inputs": true,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            [
+              10,
+              20,
+              30,
+              40
+            ],
+            1
+          ],
+          "expected": [
+            40,
+            10,
+            20,
+            30
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            5
+          ],
+          "expected": [
+            2,
+            3,
+            1
+          ]
+        },
+        {
+          "args": [
+            [],
+            3
+          ],
+          "expected": []
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4
+            ],
+            0
+          ],
+          "expected": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            3
+          ],
+          "expected": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            2
+          ],
+          "expected": [
+            4,
+            5,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "args": [
+            [
+              7
+            ],
+            999
+          ],
+          "expected": [
+            7
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              1,
+              2
+            ],
+            1
+          ],
+          "expected": [
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "args": [
+            [
+              1,
+              2,
+              3
+            ],
+            1000000
+          ],
+          "expected": [
+            3,
+            1,
+            2
+          ]
+        },
+        {
+          "args": [
+            [
+              -1,
+              0,
+              1
+            ],
+            2
+          ],
+          "expected": [
+            0,
+            1,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "whisper_cipher",
+      "level": 6,
+      "function": "whisper_cipher",
+      "filename": "py_whisper_cipher.py",
+      "preserve_inputs": false,
+      "forbidden_names": [],
+      "forbidden_attributes": [],
+      "cases": [
+        {
+          "args": [
+            "Zoo!",
+            2
+          ],
+          "expected": "Bqq!"
+        },
+        {
+          "args": [
+            "Abc",
+            -1
+          ],
+          "expected": "Zab"
+        },
+        {
+          "args": [
+            "code",
+            26
+          ],
+          "expected": "code"
+        },
+        {
+          "args": [
+            "hello",
+            3
+          ],
+          "expected": "khoor"
+        },
+        {
+          "args": [
+            "Hello World!",
+            1
+          ],
+          "expected": "Ifmmp Xpsme!"
+        },
+        {
+          "args": [
+            "xyz",
+            3
+          ],
+          "expected": "abc"
+        },
+        {
+          "args": [
+            "ABC123def",
+            5
+          ],
+          "expected": "FGH123ijk"
+        },
+        {
+          "args": [
+            "",
+            10
+          ],
+          "expected": ""
+        },
+        {
+          "args": [
+            "AbZ",
+            0
+          ],
+          "expected": "AbZ"
+        },
+        {
+          "args": [
+            "abc",
+            53
+          ],
+          "expected": "bcd"
+        },
+        {
+          "args": [
+            "ABC",
+            -27
+          ],
+          "expected": "ZAB"
+        },
+        {
+          "args": [
+            "9- é!",
+            3
+          ],
+          "expected": "9- é!"
+        },
+        {
+          "args": [
+            "zZ",
+            -52
+          ],
+          "expected": "zZ"
+        }
+      ]
+    }
+  ]
+}

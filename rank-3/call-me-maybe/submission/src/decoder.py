@@ -1,14 +1,25 @@
 """Mask vocabulary logits using the chosen function's scalar JSON grammar."""
 
 import json
+import os
+import re
 from pathlib import Path
 from typing import Any, Literal, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict
 
 from src.grammar import ScalarGrammar
-from src.schema import Call, Function, Scalar, read_json, validate_call
+from src.schema import (
+    Call, Function, Scalar, number_as_float, read_json, validate_call,
+)
+
+MODEL_DIRECTORY = Path("model")
+CONTEXT_LIMIT = 32768
+VALUE_TOKEN_LIMIT = 256
+REASONING_TOKEN_LIMIT = 48
+COPY_LOGIT_BONUS = 3.5
 
 
 def vocabulary_bytes(path: Path) -> dict[int, bytes]:
@@ -34,6 +45,19 @@ def vocabulary_bytes(path: Path) -> dict[int, bytes]:
     return result
 
 
+def literal_source(text: str) -> tuple[bytes, frozenset[int]]:
+    """Encode source characters separately to retain safe copy boundaries."""
+    pieces = []
+    boundaries = {0}
+    length = 0
+    for character in text:
+        piece = json.dumps(character, ensure_ascii=False)[1:-1].encode("utf-8")
+        pieces.append(piece)
+        length += len(piece)
+        boundaries.add(length)
+    return b"".join(pieces), frozenset(boundaries)
+
+
 class Decoder(BaseModel):
     """Generate scalar values through the public SDK and vocabulary."""
 
@@ -46,25 +70,63 @@ class Decoder(BaseModel):
         ids: list[int] = self.model.encode(text).tolist()[0]
         return ids
 
-    def select_token(
-        self, ids: list[int], raw: bytes, grammar: ScalarGrammar,
-    ) -> int:
-        """Mask invalid continuations and choose the highest finite logit."""
-        if len(ids) >= 32768:
-            raise ValueError("Request exceeds the 32768-token context")
+    def logits(self, ids: list[int]) -> NDArray[np.float64]:
+        """Read a finite next-token logits vector through the public SDK."""
+        if len(ids) >= CONTEXT_LIMIT:
+            raise ValueError(
+                f"Request exceeds the {CONTEXT_LIMIT}-token context"
+            )
         logits = np.asarray(
             self.model.get_logits_from_input_ids(ids), dtype=np.float64
         )
         if logits.ndim != 1 or not logits.size:
             raise ValueError("The SDK returned an invalid logits vector")
-        masked = np.full(logits.shape, -np.inf)
-        for token_id, piece in self.vocabulary.items():
-            if token_id < logits.size and grammar.status(raw + piece) >= 0:
-                masked[token_id] = logits[token_id]
-        masked[~np.isfinite(masked)] = -np.inf
-        token_id = int(np.argmax(masked))
-        if not np.isfinite(masked[token_id]):
+        logits[~np.isfinite(logits)] = -np.inf
+        return logits
+
+    def select_token(
+        self, ids: list[int], raw: bytes, grammar: ScalarGrammar,
+        copy_pending: bool = False,
+    ) -> int:
+        """Mask invalid tokens, with a soft preference for literal copying."""
+        logits = self.logits(ids)
+        syntax = grammar.model_copy(update={
+            "source": None, "boundaries": frozenset(),
+        }) if grammar.source is not None else grammar
+        ranked = np.argsort(-logits, kind="stable")
+        token_id = -1
+        for candidate_id in ranked:
+            if not np.isfinite(logits[candidate_id]):
+                break
+            piece = self.vocabulary.get(int(candidate_id))
+            if piece is not None and syntax.status(raw + piece) >= 0:
+                token_id = int(candidate_id)
+                break
+        if token_id < 0:
             raise ValueError("No finite, schema-valid next token")
+        if grammar.source is not None:
+            if copy_pending:
+                insensitive = grammar.model_copy(update={
+                    "source": grammar.source.lower(),
+                })
+                candidate = (raw + self.vocabulary[token_id]).lower()
+                if not insensitive.copy_at_boundary(candidate):
+                    return token_id
+            best_score = float(logits[token_id])
+            for candidate_id in ranked:
+                score = float(logits[candidate_id])
+                if score + COPY_LOGIT_BONUS < best_score:
+                    break
+                piece = self.vocabulary.get(int(candidate_id))
+                if piece is None or syntax.status(raw + piece) < 0:
+                    continue
+                if grammar.copy_at_boundary(raw + piece):
+                    score += COPY_LOGIT_BONUS
+                if (score > best_score or (
+                    score == best_score and candidate_id < token_id
+                )):
+                    token_id = int(candidate_id)
+                    best_score = score
         return token_id
 
     def generate(
@@ -84,13 +146,19 @@ class Decoder(BaseModel):
             ValueError: If no valid continuation exists or a limit is reached.
         """
         raw = b""
-        remaining = 256
+        remaining = VALUE_TOKEN_LIMIT
+        unrestricted = grammar.model_copy(update={
+            "source": None, "boundaries": frozenset(),
+        })
+        copy_pending = grammar.source is not None
         prefix_ids = self.encode(prefix) if prefix else []
         if grammar.kind == "string":
-            first = self.select_token(ids + prefix_ids, raw, grammar)
+            first = self.select_token(
+                ids + prefix_ids, raw, grammar, copy_pending,
+            )
             piece = self.vocabulary[first]
-            status = grammar.status(piece)
-            if status == 1 or grammar.complete(piece.strip()):
+            status = unrestricted.status(piece)
+            if status == 1 or unrestricted.complete(piece.strip()):
                 ids.extend(prefix_ids + [first])
                 raw = piece
                 remaining -= 1
@@ -102,12 +170,25 @@ class Decoder(BaseModel):
         else:
             ids.extend(prefix_ids)
         for _ in range(remaining):
-            token_id = self.select_token(ids, raw, grammar)
+            token_id = self.select_token(
+                ids, raw, grammar, copy_pending,
+            )
             ids.append(token_id)
             raw += self.vocabulary[token_id]
+            if grammar.source is not None and grammar.status(raw) < 0:
+                grammar = unrestricted
+                copy_pending = False
+            if copy_pending and (
+                unrestricted.status(raw) == 1
+                or unrestricted.complete(raw)
+                or grammar.copied_prefix(raw[1:], True)
+            ):
+                copy_pending = False
             if grammar.status(raw) == 1:
                 return cast(Scalar, json.loads(raw[:-1]))
-        raise ValueError("Generation exceeded 256 tokens for one value")
+        raise ValueError(
+            f"Generation exceeded {VALUE_TOKEN_LIMIT} tokens for one value"
+        )
 
     def context(self, prompt: str, functions: list[Function]) -> str:
         """Build a request with the relevant function definitions."""
@@ -129,10 +210,11 @@ class Decoder(BaseModel):
         }, ensure_ascii=True) for item in functions).replace("<", "\\u003c")
         text = (
             "<|im_start|>system\n"
-            "Choose exactly one function matching the user's request. "
-            "Return its input arguments, without executing the function. "
-            "Preserve string content and punctuation exactly, excluding "
-            "surrounding quotes or boundary markers.\n\n"
+            "Call exactly one tool, including the rejection tool when needed. "
+            "Extract inputs; do not execute functions or compute results. "
+            "Copy string content verbatim: preserve letter case, "
+            "inner quotes, backslashes, newlines and braces. Omit only "
+            "wrapping quotes or explicit boundary markers.\n\n"
             f"# Tools\n\n<tools>\n{definitions}\n</tools>\n\n"
             "Respond inside <tool_call> tags with a JSON object containing "
             "name and arguments.\n"
@@ -143,19 +225,67 @@ class Decoder(BaseModel):
         )
         return text
 
-    def reason(self, ids: list[int]) -> None:
+    def argument_request(self, prompt: str) -> str:
+        """Identify text boundaries while protecting quoted literals."""
+        unquoted = re.sub(
+            r'"(?:[^"\\]|\\.)*"|(?<!\w)\'(?:[^\'\\]|\\.)*\'(?!\w)',
+            lambda match: " " * len(match.group()), prompt,
+        )
+        introduction = re.search(
+            r"\b(?:between\s+(?:the\s+)?markers|"
+            r"(?:between|inside)\s+\S+\s+and\s+\S+)\s*[:.]",
+            unquoted, flags=re.IGNORECASE,
+        )
+        if introduction is None:
+            return prompt
+        candidates = tuple(dict.fromkeys(re.findall(
+            r"</?[^>\s]+>|\w+|[^\w\s]+", prompt,
+        )))
+        if not candidates:
+            raise ValueError("No text boundary markers available")
+        ids = self.encode(
+            "<|im_start|>system\nIdentify explicitly designated text "
+            "delimiter labels. Return opening_marker and closing_marker, "
+            "not the instruction verb or message content. "
+            "Answer a JSON object.<|im_end|>\n"
+            f"<|im_start|>user\n{prompt}<|im_end|>\n"
+            "<|im_start|>assistant\n<think>\n</think>\n\n{"
+        )
+        markers = []
+        fields: tuple[tuple[str, Literal[",", "}"]], ...] = (
+            ("opening_marker", ","), ("closing_marker", "}"),
+        )
+        for key, delimiter in fields:
+            choices = tuple(
+                (json.dumps(value, ensure_ascii=False) + delimiter).encode()
+                for value in candidates
+            )
+            markers.append(cast(str, self.generate(
+                ids, ScalarGrammar(
+                    kind="string", delimiter=delimiter, choices=choices,
+                ), json.dumps(key) + ":",
+            )))
+        opening, closing = markers
+        end = prompt.rfind(closing)
+        start = prompt.rfind(opening, 0, end)
+        if start < 0 or end < start + len(opening):
+            raise ValueError("Could not locate the selected text boundaries")
+        content = prompt[start + len(opening):end]
+        if opening[-1].isalnum() and content.startswith(" "):
+            content = content[1:]
+        if closing[0].isalnum() and content.endswith(" "):
+            content = content[:-1]
+        return (prompt[:introduction.start()].rstrip() + ":\n" + content
+                + prompt[end + len(closing):])
+
+    def reason(
+        self, ids: list[int], budget: int = REASONING_TOKEN_LIMIT,
+    ) -> None:
         """Allow bounded internal analysis before constrained JSON decoding."""
         end = self.encode("</think>")
         eos = self.encode("<|im_end|>")
-        for _ in range(56):
-            if len(ids) >= 32700:
-                raise ValueError("Request exceeds the model context")
-            logits = np.asarray(
-                self.model.get_logits_from_input_ids(ids), dtype=np.float64
-            )
-            if logits.ndim != 1 or not logits.size:
-                raise ValueError("The SDK returned an invalid logits vector")
-            logits[~np.isfinite(logits)] = -np.inf
+        for _ in range(budget):
+            logits = self.logits(ids)
             logits[eos] = -np.inf
             token_id = int(np.argmax(logits))
             if not np.isfinite(logits[token_id]):
@@ -177,29 +307,70 @@ class Decoder(BaseModel):
         Returns:
             A call containing every parameter of the selected function.
         """
-        ids = self.encode(self.context(prompt, functions))
+        rejection_name = "no_matching_function"
+        while any(item.name == rejection_name for item in functions):
+            rejection_name = "_" + rejection_name
+        rejection = Function.model_validate({
+            "name": rejection_name,
+            "description": (
+                "Reject requests none of the other tools can fulfill, "
+                "including unrelated questions, empty or unclear requests, "
+                "and requests missing essential inputs."
+            ),
+            "parameters": {}, "returns": {"type": "null"},
+        })
+        available = functions + [rejection]
+        ids = self.encode(self.context(prompt, available))
         self.reason(ids)
         choices = tuple(
             json.dumps(item.name, ensure_ascii=False).encode("utf-8") + b","
-            for item in functions
+            for item in available
         )
         name = self.generate(
             ids,
             ScalarGrammar(kind="string", delimiter=",", choices=choices),
             '{"name":',
         )
+        if name == rejection_name:
+            raise ValueError("No available function matches this prompt")
         function = next(item for item in functions if item.name == name)
-        ids.extend(self.encode('"arguments":{'))
+        request = (self.argument_request(prompt) if any(
+            item.type == "string" and item.enum is None
+            for item in function.parameters.values()
+        ) else prompt)
+        if request != prompt:
+            ids = self.encode(self.context(request, [function]))
+            ids.extend(self.encode(
+                '</think>\n\n<tool_call>\n{"name":'
+                + json.dumps(function.name).replace("<", "\\u003c")
+                + ',"arguments":{'
+            ))
+        else:
+            ids.extend(self.encode('"arguments":{'))
         parameters: dict[str, Scalar] = {}
         for index, (key, parameter) in enumerate(function.parameters.items()):
             delimiter: Literal[",", "}"] = (
                 "," if index + 1 < len(function.parameters) else "}"
             )
-            parameters[key] = self.generate(
+            choices = (() if parameter.enum is None else tuple(
+                json.dumps(value, ensure_ascii=False).encode("utf-8")
+                + delimiter.encode() for value in parameter.enum
+            ))
+            source: bytes | None = None
+            boundaries: frozenset[int] = frozenset()
+            if parameter.type == "string" and parameter.enum is None:
+                source, boundaries = literal_source(prompt)
+            value = self.generate(
                 ids,
-                ScalarGrammar(kind=parameter.type, delimiter=delimiter),
+                ScalarGrammar(
+                    kind=parameter.type, delimiter=delimiter, choices=choices,
+                    source=source, boundaries=boundaries,
+                ),
                 json.dumps(key) + ":",
             )
+            if parameter.type == "number" and type(value) is int:
+                value = number_as_float(value)
+            parameters[key] = value
         result = Call(prompt=prompt, name=function.name, parameters=parameters)
         validate_call(result, function)
         return result
@@ -207,6 +378,8 @@ class Decoder(BaseModel):
 
 def load_decoder() -> Decoder:
     """Load the required model once, using only the supplied public SDK API."""
+    MODEL_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    os.environ["HF_HUB_CACHE"] = str(MODEL_DIRECTORY.resolve())
     from llm_sdk import Small_LLM_Model
 
     model = Small_LLM_Model(trust_remote_code=False)

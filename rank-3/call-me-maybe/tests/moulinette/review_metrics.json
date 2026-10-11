@@ -1,0 +1,916 @@
+{
+  "review_date": "2026-10-09",
+  "project": "call-me-maybe",
+  "subject_version": "1.5",
+  "scope": "Review and temporary decoding experiments; submission unchanged",
+  "model": "Qwen/Qwen3-0.6B",
+  "python": "3.10.20",
+  "hardware": "Apple M2 Pro, 16 GB RAM",
+  "model_source": "Downloaded weights cached for all measured runs; HF_HUB_OFFLINE=1",
+  "batch_timing_includes_model_loading": false,
+  "model_loading_seconds_by_process": [
+    6.245,
+    5.826,
+    5.63,
+    5.658
+  ],
+  "experiment_prompt_timeout_seconds": 60,
+  "scoring": "Expected function name and executed tester output with schema-driven number-to-float conversion in tester only; changed and marker tests use exact expected parameters; ambiguous prompts have no semantic target",
+  "existing_offline_tests_passed": 25,
+  "flake8_passed": true,
+  "mypy_passed_source_files": 5,
+  "standalone_uv_sync_frozen_passed": true,
+  "moulinette_archive_sha256": "d5f8f4d63676246f44dfc227272a27c93df9083befa95d748b1b4c1f451d6e44",
+  "grader_comparisons": [
+    {
+      "dataset": "public",
+      "source": "Previously saved supplied_results.json",
+      "raw_score": 7,
+      "total": 11,
+      "float_diagnostic_score": 11,
+      "diagnostic_converted_values": 6
+    },
+    {
+      "dataset": "private",
+      "source": "Fresh current_private_results.json",
+      "raw_score": 8,
+      "total": 11,
+      "float_diagnostic_score": 10
+    }
+  ],
+  "recommendation": "Keep 56-token reasoning; fix float compatibility and make modest decoder cleanup. Zero/16-token variants regress on ambiguous inputs.",
+  "benchmarks": [
+    {
+      "mode": "no_reason",
+      "dataset": "public",
+      "seconds": 58.556,
+      "semantic_pass": 11,
+      "raw_grader_pass": 7,
+      "total": 11,
+      "valid_calls": 11,
+      "logits_calls": 156,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 2,
+            "b": 3
+          },
+          "seconds": 4.884,
+          "logits_calls": 9
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 265,
+            "b": 345
+          },
+          "seconds": 4.891,
+          "logits_calls": 13
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "name": "shrek"
+          },
+          "seconds": 3.053,
+          "logits_calls": 9
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "name": "john"
+          },
+          "seconds": 2.675,
+          "logits_calls": 8
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "s": "hello"
+          },
+          "seconds": 2.686,
+          "logits_calls": 8
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "s": "world"
+          },
+          "seconds": 2.687,
+          "logits_calls": 8
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 16
+          },
+          "seconds": 3.037,
+          "logits_calls": 9
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 144
+          },
+          "seconds": 3.417,
+          "logits_calls": 10
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "source_string": "Hello 34 I'm 233 years old",
+            "regex": "[0-9]+",
+            "replacement": "NUMBERS"
+          },
+          "seconds": 12.843,
+          "logits_calls": 33
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "source_string": "Programming is fun",
+            "regex": "[aeiouAEIOU]",
+            "replacement": "*"
+          },
+          "seconds": 8.686,
+          "logits_calls": 24
+        },
+        {
+          "index": 11,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "source_string": "The cat sat on the mat with another cat",
+            "regex": "cat",
+            "replacement": "dog"
+          },
+          "seconds": 9.694,
+          "logits_calls": 25
+        }
+      ]
+    },
+    {
+      "mode": "current",
+      "dataset": "private",
+      "seconds": 237.051,
+      "semantic_pass": 10,
+      "raw_grader_pass": 8,
+      "total": 11,
+      "valid_calls": 11,
+      "logits_calls": 783,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 3,
+            "b": 5
+          },
+          "seconds": 18.665,
+          "logits_calls": 65
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "raw_grader_pass": false,
+          "parameters": {
+            "a": 12,
+            "b": 4
+          },
+          "seconds": 18.856,
+          "logits_calls": 66
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "n": 4
+          },
+          "seconds": 17.574,
+          "logits_calls": 63
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "n": 7
+          },
+          "seconds": 17.518,
+          "logits_calls": 63
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "principal": 1234567.89,
+            "rate": 0.0375,
+            "years": 23
+          },
+          "seconds": 28.855,
+          "logits_calls": 86
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "query": "SELECT * FROM users",
+            "database": "production"
+          },
+          "seconds": 21.195,
+          "logits_calls": 71
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "query": "INSERT INTO logs VALUES (1, 2, 3)",
+            "database": "system"
+          },
+          "seconds": 26.149,
+          "logits_calls": 79
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "path": "/home/user/data.json",
+            "encoding": "utf-8"
+          },
+          "seconds": 22.146,
+          "logits_calls": 73
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "path": "C:\\Users\\john\\config.ini",
+            "encoding": "latin-1"
+          },
+          "seconds": 23.639,
+          "logits_calls": 76
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "raw_grader_pass": true,
+          "parameters": {
+            "template": "Hello {user}'s profile!"
+          },
+          "seconds": 20.994,
+          "logits_calls": 70
+        },
+        {
+          "index": 11,
+          "semantic_pass": false,
+          "raw_grader_pass": false,
+          "parameters": {
+            "template": "Say 'hello' to {name}"
+          },
+          "seconds": 21.46,
+          "logits_calls": 71
+        }
+      ]
+    },
+    {
+      "mode": "no_reason",
+      "dataset": "private",
+      "seconds": 68.931,
+      "semantic_pass": 10,
+      "scored": 11,
+      "total": 11,
+      "valid_calls": 11,
+      "model_load_seconds": 5.826,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 3,
+            "b": 5
+          },
+          "seconds": 3.992
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 12,
+            "b": 4
+          },
+          "seconds": 3.752
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "parameters": {
+            "n": 4
+          },
+          "seconds": 2.541
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "parameters": {
+            "n": 7
+          },
+          "seconds": 2.526
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "parameters": {
+            "principal": 1234567.89,
+            "rate": 0.0375,
+            "years": 23
+          },
+          "seconds": 12.167
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "parameters": {
+            "query": "SELECT * FROM users",
+            "database": "production"
+          },
+          "seconds": 5.982
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "parameters": {
+            "query": "INSERT INTO logs VALUES (1, 2, 3)",
+            "database": "system"
+          },
+          "seconds": 10.549
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "parameters": {
+            "path": "/home/user/data.json",
+            "encoding": "utf-8"
+          },
+          "seconds": 6.794
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "parameters": {
+            "path": "C:\\Users\\john\\config.ini",
+            "encoding": "latin-1"
+          },
+          "seconds": 8.26
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "parameters": {
+            "template": "Hello {user}'s profile!"
+          },
+          "seconds": 6.064
+        },
+        {
+          "index": 11,
+          "semantic_pass": false,
+          "parameters": {
+            "template": "Say \"hello\" to {name}\""
+          },
+          "seconds": 6.304
+        }
+      ]
+    },
+    {
+      "mode": "no_reason",
+      "dataset": "changed",
+      "seconds": 37.484,
+      "semantic_pass": 10,
+      "scored": 10,
+      "total": 10,
+      "valid_calls": 10,
+      "model_load_seconds": 5.826,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "parameters": {
+            "left": 7,
+            "right": 9
+          },
+          "seconds": 2.639
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "parameters": {
+            "left": -2.5,
+            "right": 4
+          },
+          "seconds": 3.731
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "parameters": {
+            "left": 1234567890123,
+            "right": 2
+          },
+          "seconds": 8.317
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "parameters": {
+            "text": ""
+          },
+          "seconds": 1.958
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "parameters": {
+            "text": "caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00"
+          },
+          "seconds": 4.571
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "parameters": {
+            "text": "She said \"hello\"."
+          },
+          "seconds": 4.663
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "parameters": {
+            "task": "water plants",
+            "days": 3,
+            "notify": true
+          },
+          "seconds": 4.43
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "parameters": {
+            "task": "read",
+            "days": 0,
+            "notify": false
+          },
+          "seconds": 4.004
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "parameters": {
+            "value": null
+          },
+          "seconds": 1.896
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "parameters": {},
+          "seconds": 1.273
+        }
+      ]
+    },
+    {
+      "mode": "no_reason",
+      "dataset": "edge",
+      "completed": false,
+      "first_prompt": "",
+      "reason": "Empty prompt did not finish within five minutes; experiment terminated.",
+      "elapsed_before_termination_seconds": 352.511
+    },
+    {
+      "mode": "short_reason",
+      "reasoning_budget": 16,
+      "dataset": "public",
+      "seconds": 95.147,
+      "semantic_pass": 11,
+      "scored": 11,
+      "total": 11,
+      "valid_calls": 11,
+      "model_load_seconds": 5.63,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 2,
+            "b": 3
+          },
+          "seconds": 7.202
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 265,
+            "b": 345
+          },
+          "seconds": 8.139
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "parameters": {
+            "name": "shrek"
+          },
+          "seconds": 6.576
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "parameters": {
+            "name": "john"
+          },
+          "seconds": 6.22
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "parameters": {
+            "s": "hello"
+          },
+          "seconds": 6.241
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "parameters": {
+            "s": "world"
+          },
+          "seconds": 6.243
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 16
+          },
+          "seconds": 6.575
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 144
+          },
+          "seconds": 6.981
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "parameters": {
+            "source_string": "Hello 34 I'm 233 years old",
+            "regex": "\\d+",
+            "replacement": "NUMBERS"
+          },
+          "seconds": 15.186
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "parameters": {
+            "source_string": "Programming is fun",
+            "regex": "[aeiouAEIOU]",
+            "replacement": "*"
+          },
+          "seconds": 12.35
+        },
+        {
+          "index": 11,
+          "semantic_pass": true,
+          "parameters": {
+            "source_string": "The cat sat on the mat with another cat",
+            "regex": "cat",
+            "replacement": "dog"
+          },
+          "seconds": 13.432
+        }
+      ]
+    },
+    {
+      "mode": "short_reason",
+      "reasoning_budget": 16,
+      "dataset": "private",
+      "seconds": 114.122,
+      "semantic_pass": 10,
+      "scored": 11,
+      "total": 11,
+      "valid_calls": 11,
+      "model_load_seconds": 5.63,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 3,
+            "b": 5
+          },
+          "seconds": 7.463
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "parameters": {
+            "a": 12,
+            "b": 4
+          },
+          "seconds": 7.879
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "parameters": {
+            "n": 4
+          },
+          "seconds": 6.624
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "parameters": {
+            "n": 7
+          },
+          "seconds": 6.623
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "parameters": {
+            "principal": 1234567.89,
+            "rate": 0.0375,
+            "years": 23
+          },
+          "seconds": 16.564
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "parameters": {
+            "query": "SELECT * FROM users",
+            "database": "production"
+          },
+          "seconds": 10.125
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "parameters": {
+            "query": "INSERT INTO logs VALUES (1, 2, 3)",
+            "database": "system"
+          },
+          "seconds": 14.763
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "parameters": {
+            "path": "/home/user/data.json",
+            "encoding": "utf-8"
+          },
+          "seconds": 11.002
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "parameters": {
+            "path": "C:\\Users\\john\\config.ini",
+            "encoding": "latin-1"
+          },
+          "seconds": 12.508
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "parameters": {
+            "template": "Hello {user}'s profile!"
+          },
+          "seconds": 10.133
+        },
+        {
+          "index": 11,
+          "semantic_pass": false,
+          "parameters": {
+            "template": "Say \"hello\" to {name}\""
+          },
+          "seconds": 10.438
+        }
+      ]
+    },
+    {
+      "mode": "short_reason",
+      "reasoning_budget": 16,
+      "dataset": "changed",
+      "seconds": 73.06,
+      "semantic_pass": 10,
+      "scored": 10,
+      "total": 10,
+      "valid_calls": 10,
+      "model_load_seconds": 5.63,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": true,
+          "parameters": {
+            "left": 7,
+            "right": 9
+          },
+          "seconds": 6.169
+        },
+        {
+          "index": 2,
+          "semantic_pass": true,
+          "parameters": {
+            "left": -2.5,
+            "right": 4
+          },
+          "seconds": 7.342
+        },
+        {
+          "index": 3,
+          "semantic_pass": true,
+          "parameters": {
+            "left": 1234567890123,
+            "right": 2
+          },
+          "seconds": 11.96
+        },
+        {
+          "index": 4,
+          "semantic_pass": true,
+          "parameters": {
+            "text": ""
+          },
+          "seconds": 5.447
+        },
+        {
+          "index": 5,
+          "semantic_pass": true,
+          "parameters": {
+            "text": "caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00"
+          },
+          "seconds": 8.036
+        },
+        {
+          "index": 6,
+          "semantic_pass": true,
+          "parameters": {
+            "text": "She said \"hello\"."
+          },
+          "seconds": 8.26
+        },
+        {
+          "index": 7,
+          "semantic_pass": true,
+          "parameters": {
+            "task": "water plants",
+            "days": 3,
+            "notify": true
+          },
+          "seconds": 8.017
+        },
+        {
+          "index": 8,
+          "semantic_pass": true,
+          "parameters": {
+            "task": "read",
+            "days": 0,
+            "notify": false
+          },
+          "seconds": 7.576
+        },
+        {
+          "index": 9,
+          "semantic_pass": true,
+          "parameters": {
+            "value": null
+          },
+          "seconds": 5.444
+        },
+        {
+          "index": 10,
+          "semantic_pass": true,
+          "parameters": {},
+          "seconds": 4.808
+        }
+      ]
+    },
+    {
+      "mode": "short_reason",
+      "reasoning_budget": 16,
+      "dataset": "edge",
+      "seconds": 137.024,
+      "semantic_pass": 0,
+      "scored": 2,
+      "total": 4,
+      "valid_calls": 2,
+      "model_load_seconds": 5.63,
+      "prompts": [
+        {
+          "index": 1,
+          "error": "Review prompt exceeded 60 seconds",
+          "semantic_pass": null,
+          "seconds": 60.012
+        },
+        {
+          "index": 2,
+          "error": "Review prompt exceeded 60 seconds",
+          "semantic_pass": null,
+          "seconds": 60.005
+        },
+        {
+          "index": 3,
+          "semantic_pass": false,
+          "parameters": {
+            "text": "BEGIN path C:\\temp END"
+          },
+          "seconds": 8.202
+        },
+        {
+          "index": 4,
+          "semantic_pass": false,
+          "parameters": {
+            "text": "BEGIN first line\nsecond line END"
+          },
+          "seconds": 8.803
+        }
+      ],
+      "experiment_prompt_timeout_seconds": 60
+    },
+    {
+      "mode": "current",
+      "reasoning_budget": 56,
+      "dataset": "edge",
+      "seconds": 63.896,
+      "semantic_pass": 0,
+      "scored": 2,
+      "total": 4,
+      "valid_calls": 4,
+      "model_load_seconds": 5.658,
+      "prompts": [
+        {
+          "index": 1,
+          "semantic_pass": null,
+          "parameters": {},
+          "seconds": 14.515
+        },
+        {
+          "index": 2,
+          "semantic_pass": null,
+          "parameters": {},
+          "seconds": 13.837
+        },
+        {
+          "index": 3,
+          "semantic_pass": false,
+          "parameters": {
+            "text": "BEGIN path C:\\temp END"
+          },
+          "seconds": 17.355
+        },
+        {
+          "index": 4,
+          "semantic_pass": false,
+          "parameters": {
+            "text": "BEGIN first line\nsecond line END"
+          },
+          "seconds": 18.188
+        }
+      ]
+    }
+  ]
+}

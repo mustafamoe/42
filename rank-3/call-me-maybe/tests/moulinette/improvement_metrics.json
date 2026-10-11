@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-09",
+  "environment": {
+    "python": "3.10.20",
+    "hardware": "Apple M2 Pro / 16 GB",
+    "macos": "27.0",
+    "backend": "MPS",
+    "model": "Qwen/Qwen3-0.6B",
+    "offline_cached_inference": true,
+    "cache_seeded_from_existing_downloads": true
+  },
+  "reasoning_token_limit": 48,
+  "copy_logit_bonus": 3.5,
+  "source_sha256": {
+    "decoder.py": "ad06932f2562c5968e2bd31638ed425841f46c90f5a41d8f9575fd6d8782523d",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "9f3488eaac696822f9f24579b0ccec12e3c116ef3ff46cd4bd4ca30c07ebe315",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "checks": {
+    "offline_tests": {
+      "passed": 42,
+      "total": 42
+    },
+    "flake8": "pass",
+    "required_mypy": "pass",
+    "standalone_install_lint_help": "pass",
+    "original_sdk_and_data": "unchanged",
+    "public_api_ast_audit": "pass",
+    "local_model_cache": {
+      "weight_files": 1,
+      "weight_bytes": 1503300328,
+      "snapshot_links_stay_within_project_cache": true
+    },
+    "real_cli_unmatched_request": {
+      "returncode": 1,
+      "existing_output_preserved": true,
+      "temporary_output_leaks": false,
+      "seconds_including_load": 20.274,
+      "stderr": "Loading Qwen/Qwen3-0.6B...\nError: Prompt 1: No available function matches this prompt\n",
+      "source_hashes_match_final_code": true
+    },
+    "sampled_repeatability": {
+      "public_runs": 2,
+      "public_output_byte_identical": true,
+      "quoted_template_private_and_regression": "pass",
+      "case_and_derived_regex_public_and_regression": "pass",
+      "scope": "Small sampled checks, not a guarantee for arbitrary inputs or hardware"
+    }
+  },
+  "intermediate_revision": {
+    "source_sha256": {
+      "decoder.py": "9a86154bcc680adf751e380a1ab60bf66afe5ca044e400e189f9b9078af9311e",
+      "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+      "grammar.py": "df873c4c6eb83b870d39d6896494bf7caaa7542e7d4747507dc06f9277e82f16",
+      "__main__.py": "9f3488eaac696822f9f24579b0ccec12e3c116ef3ff46cd4bd4ca30c07ebe315",
+      "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+    },
+    "description": "Copy preference applied after a literal prefix, before the first-content-token fix",
+    "private": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "seconds_including_load": 275.8,
+      "moulinette_correct": 11,
+      "moulinette_total": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "output_sha256": "0214c8aef3fd859c370d9e38af5673e62d2c86725776c98332827b2db51b1603"
+    },
+    "public": {
+      "calls": 11,
+      "semantic_correct": 10,
+      "schema_valid": 11,
+      "seconds_including_load": 214.1,
+      "known_failure": "shrek capitalized to Shrek"
+    }
+  },
+  "intermediate_escape_revision": {
+    "source_sha256": {
+      "decoder.py": "02c3063698a2fcc0d9e42280374b15e2ea096a017a75520f55e6a0c6cc069319",
+      "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+      "grammar.py": "df873c4c6eb83b870d39d6896494bf7caaa7542e7d4747507dc06f9277e82f16",
+      "__main__.py": "9f3488eaac696822f9f24579b0ccec12e3c116ef3ff46cd4bd4ca30c07ebe315",
+      "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+    },
+    "description": "First-token preference before excluding incomplete source characters",
+    "public": {
+      "calls": 11,
+      "semantic_correct": 10,
+      "schema_valid": 11,
+      "seconds_including_load": 227.6,
+      "known_failure": "derived digits regex contained backspace characters"
+    }
+  },
+  "batches": {
+    "public": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "seconds_including_load": 220.2,
+      "output_sha256": "df5885323f33c907eba09126284076f48e0171e90517f5508da50269111f3b18",
+      "note": "Measured before the equivalent vectorized finite-mask optimization; the final repeated public run produced identical output",
+      "moulinette_correct": 11,
+      "moulinette_total": 11
+    },
+    "private": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "seconds_including_load": 294.4,
+      "output_sha256": "0214c8aef3fd859c370d9e38af5673e62d2c86725776c98332827b2db51b1603",
+      "moulinette_correct": 11,
+      "moulinette_total": 11
+    },
+    "changed": {
+      "calls": 10,
+      "schema_valid": 10,
+      "prompt_preserved": 10,
+      "semantic_correct": 10,
+      "semantic_total": 10,
+      "seconds_including_load": 177.1,
+      "output_sha256": "c1f98cd473fd660208c336da5e67633e8b5206334c3f03fab7187fbe262359b9"
+    },
+    "repeated_public": {
+      "calls": 11,
+      "schema_valid": 11,
+      "prompt_preserved": 11,
+      "semantic_correct": 11,
+      "semantic_total": 11,
+      "seconds_including_load": 217.2,
+      "output_sha256": "df5885323f33c907eba09126284076f48e0171e90517f5508da50269111f3b18",
+      "output_identical_to_first_public_run": true,
+      "source_hashes_match_final_code": true,
+      "moulinette_correct": 11,
+      "moulinette_total": 11
+    }
+  },
+  "regressions": {
+    "passed": 10,
+    "total": 12,
+    "expected_rejections_passed": 3,
+    "expected_rejections_total": 3,
+    "positive_semantic_correct": 7,
+    "positive_total": 9,
+    "positive_schema_valid": 9,
+    "source_hashes_match_final_code": true,
+    "known_failures": [
+      "Save this exact message between markers. BEGIN path C:\\temp END",
+      "Save this exact message between markers. BEGIN first line\nsecond line END"
+    ]
+  }
+}

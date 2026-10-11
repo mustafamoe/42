@@ -146,8 +146,8 @@ class GrammarTests(unittest.TestCase):
     def test_reasoning_limit_returns_to_tool_call(self):
         decoder = self.reasoning_decoder([0, 5, 1, 100])
         context = []
-        decoder.reason(context)
-        self.assertEqual(context, [1] * 56 + [2, 4])
+        decoder.reason(context, budget=3)
+        self.assertEqual(context, [1] * 3 + [2, 4])
 
     def test_reasoning_rejects_nonfinite_logits(self):
         decoder = self.reasoning_decoder([float("nan")] * 4)
