@@ -18,8 +18,6 @@ from src.schema import (
 MODEL_DIRECTORY = Path("model")
 CONTEXT_LIMIT = 32768
 VALUE_TOKEN_LIMIT = 256
-REASONING_TOKEN_LIMIT = 48
-LITERAL_REASONING_TOKEN_LIMIT = 8
 COPY_LOGIT_BONUS = 3.5
 
 
@@ -206,7 +204,7 @@ class Decoder(BaseModel):
         )
 
     def context(self, prompt: str, functions: list[Function]) -> str:
-        """Build a request with the relevant function definitions."""
+        """Build Qwen's tool template with its complete non-thinking prefix."""
         definitions = "\n".join(json.dumps({
             "type": "function",
             "function": {
@@ -230,13 +228,18 @@ class Decoder(BaseModel):
             "Copy string content verbatim: preserve letter case, "
             "inner quotes, backslashes, newlines and braces. Omit only "
             "wrapping quotes or explicit boundary markers.\n\n"
-            f"# Tools\n\n<tools>\n{definitions}\n</tools>\n\n"
-            "Respond inside <tool_call> tags with a JSON object containing "
-            "name and arguments.\n"
-            '<tool_call>\n{"name": FUNCTION_NAME, "arguments": OBJECT}\n'
+            "# Tools\n\nYou may call one or more functions to assist "
+            "with the user query.\n\n"
+            "You are provided with function signatures within "
+            "<tools></tools> XML tags:\n"
+            f"<tools>\n{definitions}\n</tools>\n\n"
+            "For each function call, return a json object with function "
+            "name and arguments within <tool_call></tool_call> XML tags:\n"
+            '<tool_call>\n{"name": <function-name>, '
+            '"arguments": <args-json-object>}\n'
             "</tool_call><|im_end|>\n"
             f"<|im_start|>user\n{prompt}<|im_end|>\n"
-            "<|im_start|>assistant\n<think>\n"
+            "<|im_start|>assistant\n<think>\n\n</think>\n\n"
         )
         return text
 
@@ -264,7 +267,7 @@ class Decoder(BaseModel):
             "not the instruction verb or message content. "
             "Answer a JSON object.<|im_end|>\n"
             f"<|im_start|>user\n{prompt}<|im_end|>\n"
-            "<|im_start|>assistant\n<think>\n</think>\n\n{"
+            "<|im_start|>assistant\n<think>\n\n</think>\n\n{"
         )
         markers = []
         fields: tuple[tuple[str, Literal[",", "}"]], ...] = (
@@ -293,53 +296,6 @@ class Decoder(BaseModel):
         return (prompt[:introduction.start()].rstrip() + ":\n" + content
                 + prompt[end + len(closing):])
 
-    def reasoning_budget(self, prompt: str, functions: list[Function]) -> int:
-        """Choose analysis with the model, with a minimum for literal text."""
-        definitions = "\n".join(
-            item.model_dump_json(exclude_defaults=True) for item in functions
-        ).replace("<", "\\u003c")
-        text = (
-            "<|im_start|>system\nDecide if preparing the input arguments "
-            "for a function call needs analysis. Return false if all required "
-            "input values are explicitly supplied and only literal copying "
-            "is needed. Return true if any argument must be constructed, "
-            "inferred, or is missing, or the request is unclear. "
-            "Constructing patterns or expressions from descriptions counts "
-            "as analysis. Do not consider the work performed by the function "
-            "itself. Answer a JSON object with needs_analysis.\nFunctions:\n"
-            + definitions + "<|im_end|>\n<|im_start|>user\n" + prompt
-            + "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n{"
-        )
-        needs_analysis = self.generate(
-            self.encode(text), ScalarGrammar(
-                kind="boolean", delimiter="}", choices=(b"true}", b"false}"),
-            ), '"needs_analysis":',
-        )
-        if needs_analysis:
-            return REASONING_TOKEN_LIMIT
-        if any(character in prompt for character in "\"'\\\n\r\t{}"):
-            return LITERAL_REASONING_TOKEN_LIMIT
-        return 0
-
-    def reason(
-        self, ids: list[int], budget: int = REASONING_TOKEN_LIMIT,
-    ) -> None:
-        """Allow bounded internal analysis before constrained JSON decoding."""
-        end = self.encode("</think>")
-        eos = self.encode("<|im_end|>")
-        for _ in range(budget):
-            logits = self.logits(ids)
-            logits[eos] = -np.inf
-            token_id = int(np.argmax(logits))
-            if not np.isfinite(logits[token_id]):
-                raise ValueError("No finite reasoning token available")
-            ids.append(token_id)
-            if ids[-len(end):] == end:
-                break
-        else:
-            ids.extend(end)
-        ids.extend(self.encode("\n\n<tool_call>\n"))
-
     def call(self, prompt: str, functions: list[Function]) -> Call:
         """Choose a function using the model and decode its arguments.
 
@@ -366,7 +322,7 @@ class Decoder(BaseModel):
         })
         available = functions + [rejection]
         ids = self.encode(self.context(prompt, available))
-        self.reason(ids, budget=self.reasoning_budget(prompt, available))
+        ids.extend(self.encode("<tool_call>\n"))
         choices = tuple(
             json.dumps(item.name, ensure_ascii=False).encode("utf-8") + b","
             for item in available
@@ -386,7 +342,7 @@ class Decoder(BaseModel):
         if request != prompt:
             ids = self.encode(self.context(request, [function]))
             ids.extend(self.encode(
-                '</think>\n\n<tool_call>\n{"name":'
+                '<tool_call>\n{"name":'
                 + json.dumps(function.name).replace("<", "\\u003c")
                 + ',"arguments":{'
             ))

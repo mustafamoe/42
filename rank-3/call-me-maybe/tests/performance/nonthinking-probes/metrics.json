@@ -1,0 +1,180 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "probes",
+  "reasoning_mode": "disabled",
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "06fe40b3ead61c9c9c609e472a89372a4b5d8c26b896009cf81b10153c7c122b",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 3443130368,
+  "model_load_seconds": 5.362703624996357,
+  "batch_seconds": 42.052751582989,
+  "total_seconds": 47.41545520798536,
+  "exit_status": 1,
+  "prompts": [
+    {
+      "prompt": "Which planet is closest to the Sun?",
+      "values": {
+        "calls": 2,
+        "seconds": 0.8140220829518512,
+        "context_tokens": 1200
+      },
+      "seconds": 0.8534372089779936
+    },
+    {
+      "prompt": "",
+      "seconds": 1.834006980061531e-06
+    },
+    {
+      "prompt": "Please help me with it.",
+      "values": {
+        "calls": 2,
+        "seconds": 0.5551835830556229,
+        "context_tokens": 1196
+      },
+      "seconds": 0.5894917499972507
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "values": {
+        "calls": 13,
+        "seconds": 4.274928791099228,
+        "context_tokens": 9234
+      },
+      "seconds": 4.474022832990158
+    },
+    {
+      "prompt": "Format template: Please say \"welcome\" to {visitor}",
+      "values": {
+        "calls": 14,
+        "seconds": 4.601515040092636,
+        "context_tokens": 9967
+      },
+      "seconds": 4.8134126249933615
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN path C:\\temp END",
+      "values": {
+        "calls": 12,
+        "seconds": 1.5572721670032479,
+        "context_tokens": 2894
+      },
+      "seconds": 1.7452539580408484
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN first line\nsecond line END",
+      "values": {
+        "calls": 13,
+        "seconds": 1.6944174169912003,
+        "context_tokens": 3150
+      },
+      "seconds": 1.8933920830022544
+    },
+    {
+      "prompt": "Read /tmp/report.txt using latin-1 encoding.",
+      "values": {
+        "calls": 10,
+        "seconds": 2.016431374999229,
+        "context_tokens": 4036
+      },
+      "seconds": 2.1683234999654815
+    },
+    {
+      "prompt": "Set the task status to done.",
+      "values": {
+        "calls": 4,
+        "seconds": 0.795181167894043,
+        "context_tokens": 1580
+      },
+      "seconds": 0.8670054170070216
+    },
+    {
+      "prompt": "Replace cat followed by one or more digits in 'cat12 dog cat cat7' with TOKEN.",
+      "values": {
+        "calls": 18,
+        "seconds": 5.211564377183095,
+        "context_tokens": 11371
+      },
+      "seconds": 5.483656125026755
+    },
+    {
+      "prompt": "Greet shrek",
+      "values": {
+        "calls": 8,
+        "seconds": 2.2371578350430354,
+        "context_tokens": 4814
+      },
+      "seconds": 2.3635413330048323
+    },
+    {
+      "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+      "values": {
+        "calls": 28,
+        "seconds": 8.24214600014966,
+        "context_tokens": 17848
+      },
+      "seconds": 8.663445207988843
+    },
+    {
+      "prompt": "Archive the text between START and STOP: START caf\u00e9 \"hello\" STOP",
+      "values": {
+        "calls": 13,
+        "seconds": 1.4335871669463813,
+        "context_tokens": 2503
+      },
+      "seconds": 1.6344943330041133
+    },
+    {
+      "prompt": "Archive only the text inside <note> and </note>: <note>first\nsecond</note>",
+      "values": {
+        "calls": 12,
+        "seconds": 1.2582346249255352,
+        "context_tokens": 2141
+      },
+      "seconds": 1.4438196249539033
+    },
+    {
+      "prompt": "Save the literal message \"BEGIN path END\".",
+      "values": {
+        "calls": 7,
+        "seconds": 1.9662055828957818,
+        "context_tokens": 4195
+      },
+      "seconds": 2.075515999982599
+    },
+    {
+      "prompt": "Archive the literal note \"START here STOP\".",
+      "values": {
+        "calls": 7,
+        "seconds": 1.0735472499509342,
+        "context_tokens": 2107
+      },
+      "seconds": 1.182649250025861
+    },
+    {
+      "prompt": "Archive the text between << and >>: <<Use BEGIN and END literally>>",
+      "values": {
+        "calls": 14,
+        "seconds": 1.51809716707794,
+        "context_tokens": 2581
+      },
+      "seconds": 1.7888322499929927
+    }
+  ]
+}

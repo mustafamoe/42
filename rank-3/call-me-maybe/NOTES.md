@@ -1,5 +1,9 @@
 # Call me maybe
 
+The checklist and design describe the current implementation. Dated validation
+sections preserve historical results; the latest non-thinking results are at
+the end of this file.
+
 ## Source inventory and scope
 
 - Subject: `resources/subject.pdf`, **version 1.5**, all 21 pages read.
@@ -50,20 +54,18 @@
 - [x] Relocate large runtime directories and caches through the Makefile when
   `/goinfre` is available, preserving required command and output paths.
 - [ ] Verify a batch runtime below five minutes on the 42 Linux computer after
-  the speed audit. The user's latest screenshot shows 628.5 seconds.
+  the new non-thinking change. The previous adaptive version took 291.5 seconds
+  in the user's first-run screenshot; no new Linux measurement is available yet.
 - [x] Audit submission inventory and exclude output/caches/environments.
 
 ## Mandatory design
 
 The application validates files before loading the model and converts the flat
-function definitions into standard Qwen tool schemas. A separate constrained
-boolean model decision selects up to 48 internal analysis tokens when needed.
-Otherwise, requests containing quotes, escapes, whitespace controls or braces
-retain eight analysis tokens; simpler requests use zero. Blank requests fail
-before model work. It then selects a function and scalar
-argument values from
-model logits under byte-aware JSON constraints. The internal analysis is never
-written to the output file. Selected token IDs stay in the context; fixed field
+function definitions into standard Qwen tool schemas. It builds Qwen's official
+non-thinking assistant prefix and tokenizes the whole request together. Blank
+requests fail before model work. The model selects function names and scalar
+argument values under byte-aware JSON constraints, with no analysis or effort
+classification calls. Selected token IDs stay in the context; fixed field
 prefixes are encoded using the public SDK. For strings, the best allowed initial
 token is retained if it contains a complete quoted literal. Otherwise the known
 opening quote is supplied before selecting content. This preserves whole empty
@@ -77,7 +79,7 @@ source substrings. It does not guarantee semantic correctness.
 
 Token selection ranks model scores and checks only candidates that can still
 win, preserving the exhaustive decoder's exact result and token-ID tie order.
-Ordinary requests retain the original context and analysis. Explicitly announced
+Ordinary requests retain the original context. Explicitly announced
 marker blocks use a constrained model task to identify delimiter labels from
 the request, then present their content verbatim in a fresh argument context.
 The output prompt stays unchanged. Quoted literals bypass block recognition;
@@ -705,9 +707,8 @@ one question at a time without the answers.
 
 21. **What do the generation constants control?**
     `CONTEXT_LIMIT=32768` limits context tokens. `VALUE_TOKEN_LIMIT=256` limits
-    tokens for one generated value. `REASONING_TOKEN_LIMIT=48` limits internal
-    analysis when the model decides it is needed. Otherwise the budget is eight
-    for literal-text punctuation and zero for simpler input.
+    tokens for one generated value. The current non-thinking mode generates
+    no internal analysis tokens.
     `COPY_LOGIT_BONUS=3.5` prefers eligible literal-copy continuations.
     Token limits are not time limits. The copy preference is not a percentage.
 
@@ -735,11 +736,13 @@ one question at a time without the answers.
 
 26. **What should you say about accuracy and speed?**
     The targets are at least 90% accuracy, 100% valid successful JSON output,
-    and a batch time below five minutes. Recorded cached-model batches passed
-    11/11 public, 11/11 private, and 10/10 changed requests. Their times were
-    87.6, 118.7, and 62.9 seconds on the measured Mac with adaptive reasoning.
-    The latest 628.5-second Linux run exceeded the limit. A new Linux timing
-    is still required. Local results do not guarantee speed on another machine.
+    and a batch time below five minutes. The new non-thinking decoder passes
+    11/11 public, 11/11 private, 9/10 changed requests, and 16/17 stress checks.
+    Known semantic losses affect one nested-quote message and a derived regex.
+    See the latest measurement section at the end for source-matched timings.
+    The previous adaptive version took 291.5 seconds on the school computer
+    including model download. The non-thinking change needs a new Linux first
+    run; cached or local MPS measurements do not establish that result.
 
 27. **How do you run the supplied moulinette evaluation?**
     In its directory, run `uv sync` and
@@ -1053,3 +1056,109 @@ computer. Copy the updated submission there, run `make install` to migrate
 storage, then run `HF_HUB_OFFLINE=1 make run` after the model is cached. Check
 accuracy as well as the printed elapsed time. The mandatory Linux timing
 checkbox remains open; the MPS speedup is not a claimed Linux acceptance result.
+
+## Official non-thinking optimization (2026-10-13)
+
+The user confirmed that the first run, including downloads, counts and accepted
+considering a speed–accuracy tradeoff. The latest school screenshot of the
+previous adaptive version reports **291.5 seconds**, with the initial model
+files being downloaded. This supersedes the older 628.5-second screenshot as
+the latest school result, but is not a result for this new decoder.
+
+### Documented approach and implementation
+
+Qwen's [model card](https://huggingface.co/Qwen/Qwen3-0.6B) documents
+`enable_thinking=False`, and its
+[shipped template](https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/tokenizer_config.json)
+emits `<think>\n\n</think>\n\n` in that mode. The application now builds that
+complete assistant prefix and Qwen's tool instructions, tokenizing the whole
+request before supplying `<tool_call>`. A private comparison with the installed
+tokenizer's `apply_chat_template(..., enable_thinking=False)` confirmed exact
+text equality for the supplied tool schemas and a normal request.
+
+The effort classifier and analysis loop are removed. The unchanged public SDK
+still selects function names and scalar values; grammar masks, finite-choice
+completion, literal-copy preference, rejection and marker extraction remain.
+The supplied SDK and demonstration inputs remain byte-identical to their ZIPs.
+There are no new application dependencies, private SDK calls or direct imports
+of inference libraries. `/goinfre` behavior is unchanged.
+
+The SDK recomputes the full context at each logits request and does not expose
+KV caching. Qwen's supported non-thinking template reduces those calls without
+changing the inference backend. During research, shorter analysis, prompt
+compaction, selected-tool contexts and Qwen's documented thinking sampling also
+lost semantic cases. The chosen version is simpler and has measured outputs;
+none of these experiments establishes a guaranteed speedup on another CPU.
+
+### Final source-matched measurements
+
+Mac Apple M2 Pro / 16 GB, Python 3.10.20, SDK MPS. These runs reused downloaded
+weights with `HF_HUB_OFFLINE=1`; their timings include loading but not downloads.
+
+| Set | Correct | Load | Batch | Total | SDK calls |
+| --- | --- | --- | --- | --- | --- |
+| Public | 11/11 | 6.07 s | 38.37 s | 44.44 s | 125 |
+| Private | 11/11 | 5.06 s | 48.39 s | 53.44 s | 139 |
+| Changed functions | 9/10 | 5.66 s | 25.00 s | 30.65 s | 83 |
+| Stress checks | 16/17 | 5.36 s | 42.05 s | 47.42 s | 177 |
+
+All generated calls passed schema checks. The stress count includes three
+expected rejections and fourteen calls. Public runtime is about half the prior
+87.58 seconds, and SDK calls fall from 293 to 125 (57.3% fewer). This isolates
+the inference improvement; it is not a comparison of first-run download times.
+Artifacts are `tests/performance/nonthinking-{public,private,changed,probes}/`.
+Every recorded application-source hash matches the final decoder.
+
+The real-model failures remain visible, with their original expected answers:
+
+- Changed prompt 6: `She said "hello".` becomes `'She said 'hello'.'`, retaining
+  outer quotes and replacing the interior double quotes with single quotes.
+- Stress prompt 10: `cat` followed by one or more digits becomes regex `cat`,
+  so substitution incorrectly leaves digits and replaces the standalone word.
+
+The previous adaptive version passed both. Each measured set still meets 90%,
+but changed functions are exactly 90%; these finite sets do not establish unseen
+accuracy. The stress runner intentionally still exits 1 for its failed case.
+No expectations were loosened or known cases removed to obtain a passing score.
+
+### Fresh-download run
+
+`tests/benchmark_cold.py` exports the current tracked submission source into a
+new temporary directory, builds a new environment and uses empty model, HF_HOME
+and Xet caches. It removes inherited offline/cache overrides. The ordinary CLI
+is timed from before `uv run` until process exit; no model is preloaded.
+Dependency installation is timed separately and may reuse uv's package cache.
+Only this script's temporary copy is cleaned; current environments and weights
+are untouched. Output/logs/source hashes and the downloaded snapshot revision
+remain in `tests/performance/nonthinking-cold-public/`.
+
+The fresh run took **149.50 seconds**, or **150.94 seconds** including dependency
+setup, which reused cached packages. The CLI itself reported 148.2 seconds;
+the difference includes outer startup/shutdown. All 11 outputs were independently
+correct. Application hashes match the final files; later README edits do not
+affect that source match. Qwen snapshot:
+`c1899de289a04d12100db370d81485cdf75e47ca`.
+
+Reproduce from `submission/`, choosing a new output directory with enough space:
+
+```sh
+uv run python ../tests/benchmark_cold.py \
+  --output /goinfre/$(id -un)/call-me-maybe-first-run
+uv run python ../tests/check_accuracy.py \
+  /goinfre/$(id -un)/call-me-maybe-first-run/results.json
+```
+
+These commands require the full workspace's private `tests/`, not just the
+submission export. The first-run harness removes offline settings internally.
+Do not substitute an offline cached run for this acceptance measurement.
+The required first-run check on the actual 42 Linux CPU remains outstanding.
+
+### Verification
+
+All **60 applicable offline unit tests**, flake8 and required mypy flags pass.
+Tests for the removed reasoning policy were replaced by a check that only
+function/value selection performs inference and the non-thinking prefix is
+encoded together. Existing masking, schema, marker, refusal, I/O and storage
+checks remain. The standalone fresh export also successfully installed and ran
+using its own supplied SDK. Real-model scores and intentional failures are
+reported above separately from deterministic unit checks.

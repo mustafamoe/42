@@ -20,11 +20,6 @@ from src.schema import Call, Function, Parameter, number_as_float, validate_call
 class EvaluationTests(unittest.TestCase):
     """Verify allowed values, refusal, numeric precision and SDK storage."""
 
-    def setUp(self):
-        budget = patch.object(Decoder, "reasoning_budget", return_value=48)
-        budget.start()
-        self.addCleanup(budget.stop)
-
     def test_ranked_selection_matches_exhaustive_masking(self):
         vocabulary = dict(enumerate([
             b'"', b'hello', b'Hello', b'"}', b'"hello"}', b'"Hello"}',
@@ -107,7 +102,7 @@ class EvaluationTests(unittest.TestCase):
         sdk.encode.return_value.tolist.return_value = [[42]]
         decoder = Decoder(model=sdk, vocabulary={0: b'"note"}'})
         prompt = 'Store the note "hello".'
-        with patch.object(Decoder, "reason"), patch.object(
+        with patch.object(
             Decoder, "generate", side_effect=["store_note", "hello"],
         ):
             call = decoder.call(prompt, functions)
@@ -132,7 +127,7 @@ class EvaluationTests(unittest.TestCase):
         sdk.encode.return_value.tolist.return_value = [[42]]
         decoder = Decoder(model=sdk, vocabulary={0: b'false,'})
         prompt = 'Store the literal message "LAUNCH body FINISH".'
-        with patch.object(Decoder, "reason"), patch.object(
+        with patch.object(
             Decoder, "generate", return_value=False,
         ) as generate:
             self.assertEqual(decoder.argument_request(prompt), prompt)
@@ -154,10 +149,8 @@ class EvaluationTests(unittest.TestCase):
         ]
         for prompt, opening, closing, content in cases:
             with self.subTest(prompt=prompt), patch.object(
-                Decoder, "reason",
-            ), patch.object(Decoder, "generate", side_effect=[
-                opening, closing,
-            ]):
+                Decoder, "generate", side_effect=[opening, closing],
+            ):
                 request = decoder.argument_request(prompt)
             self.assertEqual(request.split(':\n', 1)[1], content)
             if prompt.startswith('Store "my note"'):
@@ -167,7 +160,7 @@ class EvaluationTests(unittest.TestCase):
         sdk = Mock()
         sdk.encode.return_value.tolist.return_value = [[42]]
         decoder = Decoder(model=sdk, vocabulary={0: b'"label"}'})
-        with patch.object(Decoder, "reason"), patch.object(
+        with patch.object(
             Decoder, "generate", side_effect=['absent', 'missing'],
         ), self.assertRaisesRegex(ValueError, "selected text boundaries"):
             decoder.argument_request('Between markers: OPEN body CLOSE')
@@ -359,7 +352,7 @@ class EvaluationTests(unittest.TestCase):
             "name": "greet", "description": "Greet a person",
             "parameters": {}, "returns": {"type": "string"},
         })
-        with patch.object(Decoder, "reason"), self.assertRaisesRegex(
+        with self.assertRaisesRegex(
             ValueError, "No available function matches",
         ):
             decoder.call("A request with no available tool", [function])
@@ -376,12 +369,11 @@ class EvaluationTests(unittest.TestCase):
             "name": "no_matching_function", "description": "An available tool",
             "parameters": {}, "returns": {"type": "null"},
         })
-        with patch.object(Decoder, "reason"):
-            call = decoder.call("Run the available tool", [function])
+        call = decoder.call("Run the available tool", [function])
         self.assertEqual(call.name, "no_matching_function")
         self.assertEqual(call.parameters, {})
         sdk.get_logits_from_input_ids.return_value = [2, 10]
-        with patch.object(Decoder, "reason"), self.assertRaisesRegex(
+        with self.assertRaisesRegex(
             ValueError, "No available function matches",
         ):
             decoder.call("An unrelated request", [function])
@@ -399,7 +391,7 @@ class EvaluationTests(unittest.TestCase):
             },
             "returns": {"type": "null"},
         })
-        with patch.object(Decoder, "reason"), patch.object(
+        with patch.object(
             Decoder, "generate", side_effect=["record", 2, 3, True],
         ):
             result = decoder.call("record", [function])

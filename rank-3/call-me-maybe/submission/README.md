@@ -126,17 +126,13 @@ program reports `No available function matches this prompt` and exits 1.
    prompt construction through the SDK, not a call to a tool-execution framework.
    Add an internal rejection tool for requests that cannot be fulfilled. Its
    name is made distinct from supplied names; it never appears in output.
-4. Ask the model a separate constrained boolean question: do these input
-   arguments need analysis, or can the supplied values be copied directly?
-   A `true` decision enables up to 48 internal reasoning tokens. Otherwise,
-   requests containing quotes, backslashes, line breaks, tabs or braces retain
-   an eight-token analysis floor to protect exact text; simpler requests skip
-   the pass. The decision uses the actual request and supplied definitions.
-   Punctuation determines only the minimum analysis budget; the model selects
-   all function names and argument values. The decision tokens never enter
-   the function-calling context. Blank requests fail immediately with a clear
-   error. The analysis and its decision are never written to the output file;
-   only the optional analysis uses unconstrained token selection.
+4. Encode the complete assistant prefix `<think>\n\n</think>\n\n` with the
+   request in one tokenizer call. This is the prefix from Qwen's published chat
+   template for `enable_thinking=False`. The SDK exposes raw tokenization rather
+   than that option, so the application builds the documented template itself.
+   No analysis tokens or effort-classification calls are generated. Blank
+   requests fail before model work. The model still selects every function name
+   and argument through constrained logits.
 5. Supply `<tool_call>` and the fixed opening `{"name":`. Constrain the next value
    to a JSON-quoted supplied name or the internal rejection name. Selecting
    rejection raises a clear error before generating arguments.
@@ -149,12 +145,12 @@ program reports `No available function matches this prompt` and exits 1.
    remaining text through the public SDK without another logits request.
    The same rule applies to enum values and marker labels. It waits until a
    UTF-8 character is complete and respects the value and context token limits.
-6. Keep the selected token IDs and internal analysis for ordinary requests.
+6. Keep the selected token IDs and original context for ordinary requests.
    For explicitly announced marker blocks, first ask the model to identify the
    opening and closing labels from tokens present in the request. Present the
    enclosed content verbatim after the instruction in the argument context, leaving
    the original output prompt unchanged. This fresh argument context contains
-   only the selected tool, so earlier analysis cannot reintroduce excluded labels.
+   only the selected tool and the extracted request.
    The function has already been selected by the model; argument values still
    come from constrained model logits.
    The block recognizer accepts `between markers:`, `between X and Y:`, and
@@ -208,7 +204,7 @@ matches its generated prefix, the schema fixes the remaining text. Other values
 continue through constrained model logits. The program does not repair arbitrary
 free-form output or guess function names from keywords.
 
-The model-selected reasoning step and prompt aid interpretation; the scalar grammar and fixed
+The model and prompt determine interpretation; the scalar grammar and fixed
 structure enforce output validity. No test answers appear in application code.
 
 ## Design decisions
@@ -223,14 +219,13 @@ structure enforce output validity. No test answers appear in application code.
   sequence. There is no retry pipeline, model fine-tuning, batching or KV cache.
 - Finishing a uniquely identified name or enum avoids redundant model calls.
   No decision between different allowed values is delegated to a keyword rule.
-- A constrained model decision retains up to 48 tokens when analysis is needed.
-  Direct extraction can skip that pass; punctuation-heavy literal text retains
-  an eight-token minimum. This avoids paying the same inference cost for every
-  request. Removing analysis indiscriminately caused quoted-text and regex
-  regressions in real-model checks.
+- Qwen's official non-thinking template avoids repeated SDK inference for
+  internal analysis. This trades some semantic accuracy for lower latency;
+  the measured losses are listed below. It also avoids a separate model call
+  to classify the required effort.
 - Explicit marker blocks use a short, constrained delimiter-identification
   task. Quoted literal messages bypass it. Ordinary requests retain their
-  original model context and analysis.
+  original model context.
 - The SDK itself recomputes the full context on each logits request. No private
   SDK attributes or methods are accessed to bypass that interface.
 - Generation stops with an error after 256 tokens for one value or when context
@@ -243,61 +238,58 @@ structure enforce output validity. No test answers appear in application code.
 Real-model measurements on 2026-10-13: Apple M2 Pro, 16 GB RAM, macOS 27.0,
 Python 3.10.20, the supplied SDK using MPS, with model files already downloaded.
 
-| Test set | Correct calls | Schema-compliant calls | Runtime |
+| Test set | Correct | Schema-compliant calls | Cached model, load + batch |
 | --- | --- | --- | --- |
-| Supplied public prompts | 11/11 (100%) | 11/11 | 87.6 seconds |
-| Additional private prompts | 11/11 (100%) | 11/11 | 118.7 seconds |
-| Changed functions and prompts | 10/10 (100%) | 10/10 | 62.9 seconds |
+| Supplied public prompts | 11/11 | 11/11 | 44.4 seconds |
+| Additional private prompts | 11/11 | 11/11 | 53.4 seconds |
+| Changed functions and prompts | 9/10 | 10/10 | 30.7 seconds |
+| Stress checks (including rejections) | 16/17 | 14/14 | 47.4 seconds |
 
-All three batches met the accuracy and five-minute targets on this machine.
-Runtime includes model loading with cached weights and `HF_HUB_OFFLINE=1`.
-Independent checks verify exact keys, types, prompt preservation and expected
-names and argument values. All 32 calls are correct, and all three output files
-are byte-identical to the previous correct batches. The unchanged supplied
-moulinette previously scored those identical public/private answers 11/11.
+Cached measurements isolate inference and loading with `HF_HUB_OFFLINE=1`.
+They exclude downloads and are not the first-run acceptance test.
 
-A fresh fixed-reasoning public baseline took 185.2 seconds. Adaptive analysis
-reduced runtime to 87.6 seconds, a 52.7% reduction. SDK calls fell from 650 to
-293: reasoning fell from 528 to 160 calls, with 11 additional calls for the
-analysis decisions. The full 48-token budget remains available for requests
-requiring it; the literal minimum protects the tested quoted-text cases.
-These measurements do not establish accuracy or timing for every unseen input.
+The prior adaptive decoder took 87.6 seconds on the public set using the same
+Mac and cached weights. Non-thinking mode removes the effort decision and all
+analysis-token inference: SDK calls fall from 293 to 125. This speedup applies
+to inference during a first run too; it does not depend on persistent answers
+or hidden model state.
 
-The latest reported 42 Linux run took 628.5 seconds before these changes.
-The revised application still needs timing and accuracy verification on that
-computer. A separate CPU-only public run on the development Mac, with 20 OMP
-and MKL threads, returned all 11 correct calls but took 920.7 seconds including
-loading. It made the same 293 model calls as MPS; inference became sharply
-slower during the final three requests. That run failed the five-minute target
-and does not establish the cause or an appropriate Linux thread setting.
-CPU thread limits can be tested through `OMP_NUM_THREADS` and
-`MKL_NUM_THREADS`; no automatic limit is imposed. Use the same cached model and
-inputs when comparing settings. Model downloads, hardware, system load and
-longer inputs can affect elapsed time. The Makefile's `/goinfre` setup addresses
-the full-home-filesystem failure, and a temporary write checks the output
-location before inference begins.
+A separate ordinary CLI run started with empty model and Hugging Face download
+caches in an isolated copy. It took **149.5 seconds**, including uv/Python
+startup, downloading weights, model loading, all 11 requests and output writing.
+All 11 calls were correct. Including dependency setup, the total was 150.9
+seconds; that setup reused uv's package cache. These are Mac MPS measurements,
+not timings from the school CPU.
 
-The two previously failing marker-delimited requests now extract the correct
-text, preserving their backslash and newline. Additional checks cover different
-delimiter names, XML tags, Unicode with inner quotes, and marker words used as
-literal content. Unrelated, empty and unclear requests are tested for explicit
-rejection. Earlier failures remain recorded separately in the private review
-history.
+The user's school screenshot for the previous adaptive version reports 291.5
+seconds with model downloads visible. The new version still needs a fresh
+first-run measurement on that Linux computer. CPU thread limits are not forced;
+the earlier four-thread result did not show an improvement. Network throughput,
+hardware, machine load and longer inputs can affect the total. The Makefile's
+`/goinfre` setup addresses the full-home-filesystem failure, and an early write
+probe checks the output location before inference begins.
 
-Structural validity and semantic accuracy are different: a valid typed argument
-can still contain the wrong text. Constraints guarantee the shape of successful
-output, not interpretation of every possible request. Missing or ambiguous
-arguments may be inferred incorrectly by the small model. Model downloads and
-hardware differences affect runtime; the first download is not part of the
-reported processing time.
+This version accepts a documented speed–accuracy tradeoff:
+
+- The changed-function set scores 9/10: a message containing nested quotes has
+  its quotes changed and retains unwanted wrapping quotes.
+- The stress set scores 16/17, including all three expected rejections: a regex
+  for `cat` followed by digits becomes `cat`, producing the wrong substitution.
+
+All generated calls in these runs are schema-compliant. Every measured set
+meets the 90% semantic threshold, but the changed set is exactly at the minimum.
+These small sets do not establish accuracy on unseen evaluation inputs.
+The previous decoder passed these two cases; the faster mode was selected with
+this loss acknowledged. Structural validity does not guarantee correct meaning.
+The CLI's printed elapsed time includes model downloads and loading; use an
+external wall timer when also counting Python startup or dependency installation.
 
 For a fixed schema, vocabulary size V, model-selected length T, maximum scalar
 byte length L and K
 candidates inspected per token, ranking and prefix checks cost
 O(T * (V log V + K * L)), apart from model inference. K can be V in the worst
 case, but ordinary requests usually inspect far fewer candidates.
-The analysis decision adds a small constrained boolean generation. Optional
-internal reasoning adds at most 48 model calls per prompt. Memory holds the model,
+No inference calls are spent on internal analysis. Memory holds the model,
 vocabulary, current context, encoded copy source and completed calls. Literal
 scoring also searches the request for each candidate, so longer requests add
 work beyond the schema checks. Finite generation limits bound
@@ -319,18 +311,17 @@ runaway continuation; they do not promise completion for arbitrary input sizes.
 - Valid JSON alone does not ensure correct extraction. Real-model checks score
   argument content separately from parsing and type compliance. Direct greedy
   JSON generation made semantic mistakes despite valid syntax. The final design
-  uses Qwen's native tool format and a short internal analysis before masking
-  names and arguments.
+  uses Qwen's native non-thinking tool format while masking names and arguments.
+  This improves speed but retains the documented semantic limitations.
 
 ## Testing strategy
 
-Sixty-six private tests are kept outside the evaluation repository. They
+Sixty private tests are kept outside the evaluation repository. They
 exercise valid scalar prefixes at every byte boundary, malformed escapes and
 numbers, partial Unicode, random escaped strings, token masking against higher
 invalid logits, non-finite logits and generation limits. File and CLI checks
 cover malformed input, schema mismatches, empty batches, failure cleanup and
-preserving existing output. Separate checks verify reasoning termination, its
-token budget, and rejection of non-finite reasoning logits.
+preserving existing output.
 Evaluation regressions cover enum definitions and token masks, exact numeric
 conversion, rejection without name collisions, local SDK cache setup, and both
 copied strings and derived strings sharing a literal prefix.
@@ -339,8 +330,8 @@ random scores, ties and non-finite values, and verify ordinary tool contexts,
 arbitrary delimiter labels, literal-marker preservation and content whitespace.
 Further checks cover early output failures, completion only after finite choices
 are disambiguated, split UTF-8, and both token limits during completion.
-Adaptive-reasoning tests verify boolean masking, the three budgets, isolation of the
-analysis decision from the function context, and immediate blank-input failure.
+Non-thinking checks verify the complete prefix is tokenized together, no
+analysis calls precede function selection, and blank requests fail immediately.
 Makefile checks cover storage relocation, idempotency, conflicting destinations,
 existing links, cleared storage and cache environment settings.
 
@@ -351,8 +342,9 @@ are scored by substitution behavior, allowing equivalent patterns.
 Additional stress cases check empty and ambiguous requests, backslashes and
 newlines inside marker-delimited text, alternative delimiters and literal marker
 words. Semantic accuracy is checked independently of JSON/schema validity.
-The final real-model regression run passed all 17 checks: three expected
-rejections and fourteen correct, schema-compliant calls.
+The real-model stress run passed 16/17 checks: all three expected rejections
+and thirteen correct calls. All fourteen generated calls are schema-compliant;
+the complex regex case remains a semantic failure.
 
 To check a standalone submission:
 
@@ -375,7 +367,8 @@ Repeat with edited input files to verify that selection is not hardcoded.
 - [Qwen3-0.6B model card](https://huggingface.co/Qwen/Qwen3-0.6B) - model context,
   chat format and reasoning behavior.
 - [Qwen's shipped chat template](https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/tokenizer_config.json)
-  - tool schemas, role boundaries and the internal `arguments` field.
+  - tool schemas, role boundaries, the internal `arguments` field and the
+    complete non-thinking assistant prefix.
 - [Pydantic configuration](https://docs.pydantic.dev/latest/api/config/) - strict
   type validation and rejecting extra fields.
 - [uv project guide](https://docs.astral.sh/uv/guides/projects/) - dependency

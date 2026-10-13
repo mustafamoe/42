@@ -129,33 +129,6 @@ class GrammarTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "256"):
             decoder.generate([], ScalarGrammar(kind="number", delimiter=","))
 
-    def reasoning_decoder(self, logits):
-        sdk = Mock()
-        tokens = {"</think>": [2], "<|im_end|>": [3],
-                  "\n\n<tool_call>\n": [4]}
-        sdk.encode.side_effect = lambda text: np.asarray([tokens[text]])
-        sdk.get_logits_from_input_ids.return_value = logits
-        return Decoder(model=sdk, vocabulary={0: b"x"})
-
-    def test_reasoning_stops_and_excludes_conversation_end(self):
-        decoder = self.reasoning_decoder([0, 5, 1, 100])
-        decoder.model.get_logits_from_input_ids.side_effect = [
-            [0, 5, 1, 100], [0, 1, 5, 100],
-        ]
-        context = []
-        decoder.reason(context)
-        self.assertEqual(context, [1, 2, 4])
-
-    def test_reasoning_limit_returns_to_tool_call(self):
-        decoder = self.reasoning_decoder([0, 5, 1, 100])
-        context = []
-        decoder.reason(context, budget=3)
-        self.assertEqual(context, [1] * 3 + [2, 4])
-
-    def test_reasoning_rejects_nonfinite_logits(self):
-        decoder = self.reasoning_decoder([float("nan")] * 4)
-        with self.assertRaisesRegex(ValueError, "finite"):
-            decoder.reason([])
 
 
 class FileTests(unittest.TestCase):

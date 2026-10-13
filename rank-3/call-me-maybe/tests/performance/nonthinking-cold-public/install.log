@@ -1,0 +1,47 @@
+Using CPython 3.10.20
+Creating virtual environment at: .venv
+   Building llm-sdk @ file:///Users/mustafamoe/Desktop/42/rank-3/call-me-maybe/tests/performance/nonthinking-cold-public/fresh-b3ps9to3/submission/llm_sdk
+      Built llm-sdk @ file:///Users/mustafamoe/Desktop/42/rank-3/call-me-maybe/tests/performance/nonthinking-cold-public/fresh-b3ps9to3/submission/llm_sdk
+Prepared 1 package in 896ms
+Installed 41 packages in 470ms
+ + accelerate==1.15.0
+ + annotated-types==0.8.0
+ + certifi==2026.7.22
+ + charset-normalizer==3.5.1
+ + filelock==3.32.6
+ + flake8==7.3.0
+ + fsspec==2026.7.0
+ + hf-xet==1.6.0
+ + huggingface-hub==0.36.2
+ + idna==3.19
+ + jinja2==3.1.6
+ + librt==0.15.0
+ + llm-sdk==0.1.0 (from file:///Users/mustafamoe/Desktop/42/rank-3/call-me-maybe/tests/performance/nonthinking-cold-public/fresh-b3ps9to3/submission/llm_sdk)
+ + markupsafe==3.0.3
+ + mccabe==0.7.0
+ + mpmath==1.3.0
+ + mypy==1.20.2
+ + mypy-extensions==1.1.0
+ + networkx==3.4.2
+ + numpy==2.2.6
+ + packaging==26.3
+ + pathspec==1.1.1
+ + psutil==7.2.2
+ + pycodestyle==2.14.0
+ + pydantic==2.13.5
+ + pydantic-core==2.46.5
+ + pyflakes==3.4.0
+ + pyyaml==6.0.3
+ + regex==2026.9.10
+ + requests==2.34.2
+ + safetensors==0.8.0
+ + setuptools==84.0.0
+ + sympy==1.14.0
+ + tokenizers==0.22.2
+ + tomli==2.4.1
+ + torch==2.14.0
+ + tqdm==4.70.1
+ + transformers==4.57.6
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + urllib3==2.7.0

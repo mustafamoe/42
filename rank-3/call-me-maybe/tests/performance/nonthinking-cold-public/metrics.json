@@ -1,0 +1,97 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "suite": "public",
+  "source_sha256": {
+    ".flake8": "6a572ff5f27bbfd6893140af830e2502ac2a76840061d57f4cb5987eee826b96",
+    ".gitignore": "00376620d189b699c470daf26f7813f72b60a60c6353da1cd77328d0af7f46e6",
+    "Makefile": "32b1d0bb00a87b21540e7a25dbf07c087078a0a0c413dd85a2f2e7e053e4ab6c",
+    "README.md": "ce40603110225e86926794365ecc093dbe7fff669df54d07648c886b6e3e988c",
+    "data/input/function_calling_tests.json": "6cd6c4d8206eb81e106a41f8afd8616cf2a819d89629f0fe6750a3013f1f6877",
+    "data/input/functions_definition.json": "647b9a6d15da7ed29a16943793e67b8a2c7ba5bf5c7d56946034f8afba35e19e",
+    "llm_sdk/llm_sdk/__init__.py": "1638cfe1b23c7166a026e668aecb5be21b79a4d3c18bbf1e40dc09d2a36f2311",
+    "llm_sdk/pyproject.toml": "5eaf932b8c808b2626cd375c3191d44c97b7b49ea8cb846099eafd763f9356a1",
+    "llm_sdk/uv.lock": "571e86020172c9c2e6e9c9ed7bffa0c396593c654acbedd3e6bbdecce0d8980c",
+    "pyproject.toml": "6aa601570d922ffd5aace53c0f3511e93d0237973e17f4ca957d687dedfe9841",
+    "src/__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "src/__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "src/decoder.py": "06fe40b3ead61c9c9c609e472a89372a4b5d8c26b896009cf81b10153c7c122b",
+    "src/grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "src/schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4",
+    "uv.lock": "224cf0a61ac236b47a4db3261d35c4c8d6fd9725466546cad57ef4337f40e621"
+  },
+  "command": [
+    "uv",
+    "run",
+    "python",
+    "-m",
+    "src",
+    "--output",
+    "/Users/mustafamoe/Desktop/42/rank-3/call-me-maybe/tests/performance/nonthinking-cold-public/results.json"
+  ],
+  "model_cache_empty_before_run": true,
+  "dependency_install_seconds": 1.4391138330101967,
+  "first_run_wall_seconds": 149.50205991696566,
+  "install_plus_first_run_seconds": 150.94117374997586,
+  "downloaded_snapshots": [
+    "model/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca"
+  ],
+  "exit_status": 0,
+  "events": [
+    {
+      "seconds": 1.578,
+      "message": "Loading Qwen/Qwen3-0.6B..."
+    },
+    {
+      "seconds": 113.099,
+      "message": "Processed 1/11"
+    },
+    {
+      "seconds": 116.398,
+      "message": "Processed 2/11"
+    },
+    {
+      "seconds": 118.776,
+      "message": "Processed 3/11"
+    },
+    {
+      "seconds": 120.841,
+      "message": "Processed 4/11"
+    },
+    {
+      "seconds": 122.619,
+      "message": "Processed 5/11"
+    },
+    {
+      "seconds": 124.394,
+      "message": "Processed 6/11"
+    },
+    {
+      "seconds": 126.185,
+      "message": "Processed 7/11"
+    },
+    {
+      "seconds": 128.264,
+      "message": "Processed 8/11"
+    },
+    {
+      "seconds": 136.909,
+      "message": "Processed 9/11"
+    },
+    {
+      "seconds": 142.661,
+      "message": "Processed 10/11"
+    },
+    {
+      "seconds": 148.809,
+      "message": "Processed 11/11"
+    },
+    {
+      "seconds": 148.81,
+      "message": "Wrote 11 calls to /Users/mustafamoe/Desktop/42/rank-3/call-me-maybe/tests/performance/nonthinking-cold-public/results.json in 148.2s"
+    }
+  ],
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  }
+}
