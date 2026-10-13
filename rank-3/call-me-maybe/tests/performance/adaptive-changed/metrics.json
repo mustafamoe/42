@@ -1,0 +1,132 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "changed",
+  "reasoning_budget": null,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "b2d0dd1c9b1e0ea9022c83b73f686111cfd3725137818e1a21082a718cdc76e4",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 1907032064,
+  "model_load_seconds": 6.338483207975514,
+  "batch_seconds": 50.77806608303217,
+  "total_seconds": 57.116549291007686,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "Multiply 7 by 9.",
+      "values": {
+        "calls": 7,
+        "seconds": 2.3330120029859245,
+        "context_tokens": 3697
+      },
+      "seconds": 2.4565549170365557
+    },
+    {
+      "prompt": "What is the product of -2.5 and 4?",
+      "values": {
+        "calls": 10,
+        "seconds": 2.432418207929004,
+        "context_tokens": 5452
+      },
+      "seconds": 2.5885520830051973
+    },
+    {
+      "prompt": "Multiply 1234567890123 by 2.",
+      "values": {
+        "calls": 19,
+        "seconds": 4.888357960153371,
+        "context_tokens": 10759
+      },
+      "seconds": 5.187003874976654
+    },
+    {
+      "prompt": "Save the empty message: \"\".",
+      "values": {
+        "calls": 5,
+        "seconds": 1.1530414590379223,
+        "context_tokens": 2559
+      },
+      "seconds": 1.2387522089993581
+    },
+    {
+      "prompt": "Save this exact message: \"caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00\".",
+      "values": {
+        "calls": 11,
+        "seconds": 2.758140998892486,
+        "context_tokens": 6004
+      },
+      "seconds": 2.93059391702991
+    },
+    {
+      "prompt": "Save this exact message (between single quotes): 'She said \"hello\".'",
+      "values": {
+        "calls": 12,
+        "seconds": 2.940468957880512,
+        "context_tokens": 6612
+      },
+      "seconds": 3.12619379197713
+    },
+    {
+      "prompt": "Set a reminder for the task 'water plants' after 3 days and send a notification.",
+      "values": {
+        "calls": 11,
+        "seconds": 2.9194575830479153,
+        "context_tokens": 6584
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.497344163886737,
+        "context_tokens": 27768
+      },
+      "seconds": 15.754079708014615
+    },
+    {
+      "prompt": "Set a reminder for the task 'read' after 0 days without sending a notification.",
+      "values": {
+        "calls": 10,
+        "seconds": 2.6517657510121353,
+        "context_tokens": 5947
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.543269709160086,
+        "context_tokens": 27720
+      },
+      "seconds": 15.516054416948464
+    },
+    {
+      "prompt": "Clear the setting by setting its value to null.",
+      "values": {
+        "calls": 5,
+        "seconds": 1.1732919169589877,
+        "context_tokens": 2579
+      },
+      "seconds": 1.255620166019071
+    },
+    {
+      "prompt": "Check whether the service is healthy.",
+      "values": {
+        "calls": 3,
+        "seconds": 0.6660344579722732,
+        "context_tokens": 1445
+      },
+      "seconds": 0.7182763749733567
+    }
+  ]
+}

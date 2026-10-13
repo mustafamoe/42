@@ -1,0 +1,186 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "private",
+  "reasoning_budget": 48,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "3f8f748dc2cbf23229b408103a5a6ca99fc6b8fb464bbd1e7e3096bfbca2c583",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 3436412928,
+  "model_load_seconds": 5.7119042910053395,
+  "batch_seconds": 222.37099554104498,
+  "total_seconds": 228.08289983205032,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the product of 3 and 5?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.940637631923892,
+        "context_tokens": 32424
+      },
+      "values": {
+        "calls": 7,
+        "seconds": 2.210433666186873,
+        "context_tokens": 5002
+      },
+      "seconds": 17.439172332989983
+    },
+    {
+      "prompt": "What is the product of 12 and 4?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.303564791101962,
+        "context_tokens": 32472
+      },
+      "values": {
+        "calls": 8,
+        "seconds": 2.5426422069431283,
+        "context_tokens": 5731
+      },
+      "seconds": 17.141090458026156
+    },
+    {
+      "prompt": "Is 4 an even number?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.821970414021052,
+        "context_tokens": 32232
+      },
+      "values": {
+        "calls": 5,
+        "seconds": 1.575756166013889,
+        "context_tokens": 3539
+      },
+      "seconds": 16.658185667009093
+    },
+    {
+      "prompt": "Is 7 an even number?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.58835062396247,
+        "context_tokens": 32232
+      },
+      "values": {
+        "calls": 5,
+        "seconds": 1.57027654198464,
+        "context_tokens": 3539
+      },
+      "seconds": 16.401035291026346
+    },
+    {
+      "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 15.2766835790826,
+        "context_tokens": 33288
+      },
+      "values": {
+        "calls": 25,
+        "seconds": 8.652429913927335,
+        "context_tokens": 18710
+      },
+      "seconds": 24.552398875006475
+    },
+    {
+      "prompt": "Execute SQL query 'SELECT * FROM users' on the production database",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.652349081996363,
+        "context_tokens": 32520
+      },
+      "values": {
+        "calls": 12,
+        "seconds": 3.954072665073909,
+        "context_tokens": 8652
+      },
+      "seconds": 18.979688707971945
+    },
+    {
+      "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 15.171410712064244,
+        "context_tokens": 32904
+      },
+      "values": {
+        "calls": 20,
+        "seconds": 6.5403606269392185,
+        "context_tokens": 14672
+      },
+      "seconds": 22.203148917004
+    },
+    {
+      "prompt": "Read the file at /home/user/data.json with utf-8 encoding",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 15.628548249893356,
+        "context_tokens": 32568
+      },
+      "values": {
+        "calls": 15,
+        "seconds": 4.929311997024342,
+        "context_tokens": 10832
+      },
+      "seconds": 21.14790979202371
+    },
+    {
+      "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 15.28776374773588,
+        "context_tokens": 32568
+      },
+      "values": {
+        "calls": 18,
+        "seconds": 6.818303292966448,
+        "context_tokens": 13028
+      },
+      "seconds": 23.63097033300437
+    },
+    {
+      "prompt": "Format template: Hello {user}'s profile!",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 17.079769296047743,
+        "context_tokens": 32376
+      },
+      "values": {
+        "calls": 12,
+        "seconds": 5.493639417865779,
+        "context_tokens": 8600
+      },
+      "seconds": 23.69485904200701
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 15.431048749305774,
+        "context_tokens": 32424
+      },
+      "values": {
+        "calls": 13,
+        "seconds": 4.569151165953372,
+        "context_tokens": 9338
+      },
+      "seconds": 20.49439062498277
+    }
+  ]
+}

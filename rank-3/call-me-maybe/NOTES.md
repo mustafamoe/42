@@ -45,15 +45,23 @@
 - [x] Pass flake8 and required mypy checks on authored code.
 - [x] Include required English README sections and AI-use disclosure.
 - [x] Validate supplied prompts and unseen function sets with the real model.
-- [x] Measure >=90% semantic accuracy, 100% valid schema-compliant JSON and
-  runtime under five minutes on the measured test set.
+- [x] Measure >=90% semantic accuracy and 100% valid schema-compliant JSON
+  on the local test sets.
+- [x] Relocate large runtime directories and caches through the Makefile when
+  `/goinfre` is available, preserving required command and output paths.
+- [ ] Verify a batch runtime below five minutes on the 42 Linux computer after
+  the speed audit. The user's latest screenshot shows 628.5 seconds.
 - [x] Audit submission inventory and exclude output/caches/environments.
 
 ## Mandatory design
 
 The application validates files before loading the model and converts the flat
-function definitions into standard Qwen tool schemas. It uses up to 48 tokens
-of internal analysis, then selects a function and scalar argument values from
+function definitions into standard Qwen tool schemas. A separate constrained
+boolean model decision selects up to 48 internal analysis tokens when needed.
+Otherwise, requests containing quotes, escapes, whitespace controls or braces
+retain eight analysis tokens; simpler requests use zero. Blank requests fail
+before model work. It then selects a function and scalar
+argument values from
 model logits under byte-aware JSON constraints. The internal analysis is never
 written to the output file. Selected token IDs stay in the context; fixed field
 prefixes are encoded using the public SDK. For strings, the best allowed initial
@@ -75,7 +83,9 @@ the request, then present their content verbatim in a fresh argument context.
 The output prompt stays unchanged. Quoted literals bypass block recognition;
 there are no hardcoded delimiter pairs or function-specific extraction rules.
 
-All output names and values come from constrained logits. JSON structure and
+The model selects output names and values through constrained logits. Once a
+prefix identifies just one name or enum value, the remaining text is fixed by
+that choice and is encoded without another model call. JSON structure and
 parameter keys come from the validated definitions. Final Pydantic checks verify
 exact keys/types and scalar enums, and the complete batch is serialized before
 output replacement. Declared numbers use floats only for lossless conversions;
@@ -85,8 +95,10 @@ No functions are executed, and no guessed fallback arguments are inserted after
 a generation failure.
 An internal rejection tool lets the model decline unrelated or incomplete
 requests with a clear error. Its name is distinct from every supplied name.
-The unchanged SDK stores actual model files in the local ignored `model/`
-directory via `HF_HUB_CACHE`, set before SDK imports.
+The unchanged SDK stores actual model files through the ignored `model/`
+path via `HF_HUB_CACHE`, set before SDK imports. When `/goinfre` exists, Makefile
+commands relocate `.venv/`, `model/` and `data/output/` there, preserving those
+paths as ignored symlinks and moving the package/Python/auxiliary caches too.
 
 The flat mandatory schema supports string, number, integer, boolean and null.
 Nested arrays/objects are bonus scope and will be rejected with a clear error.
@@ -328,8 +340,10 @@ to the submission.
   The schema fixes parameter keys; it never selects function names by keywords.
 - Changing a function set requires editing its JSON definitions, not Python code.
   Return types are validated metadata; the program never calls actual functions.
-- Explain the internal 48-token analysis and why its prose is not the final
-  answer: the subsequent name/value tokens are always grammar-constrained.
+- Explain the separate constrained boolean analysis decision and the zero,
+  eight or 48-token budgets. The eight-token minimum protects quoted/escaped
+  text. The subsequent function-name and value tokens remain grammar-constrained;
+  the analysis decision and prose are never written into the output.
 - Explain the string-start decision: preserve a complete quoted-value token
   when the model selects it; otherwise supply the opening quote before choosing
   content. Always forcing the quote would exclude whole empty-string tokens.
@@ -692,13 +706,16 @@ one question at a time without the answers.
 21. **What do the generation constants control?**
     `CONTEXT_LIMIT=32768` limits context tokens. `VALUE_TOKEN_LIMIT=256` limits
     tokens for one generated value. `REASONING_TOKEN_LIMIT=48` limits internal
-    analysis. `COPY_LOGIT_BONUS=3.5` prefers eligible literal-copy continuations.
+    analysis when the model decides it is needed. Otherwise the budget is eight
+    for literal-text punctuation and zero for simpler input.
+    `COPY_LOGIT_BONUS=3.5` prefers eligible literal-copy continuations.
     Token limits are not time limits. The copy preference is not a percentage.
 
 22. **Where are the model files stored?**
     `MODEL_DIRECTORY` is `Path("model")`, relative to the working directory.
     The program sets `HF_HUB_CACHE` before importing the SDK. The downloaded
-    files are ignored development artifacts.
+    files are ignored development artifacts. `make install` relocates the model,
+    environment and output through symlinks when `/goinfre` is available.
 
 23. **How are literal strings and marked text handled?**
     Eligible source-matching tokens receive a finite copy preference. Stronger
@@ -720,8 +737,9 @@ one question at a time without the answers.
     The targets are at least 90% accuracy, 100% valid successful JSON output,
     and a batch time below five minutes. Recorded cached-model batches passed
     11/11 public, 11/11 private, and 10/10 changed requests. Their times were
-    191.4, 234.7, and 167.6 seconds on the measured Mac. These results do not
-    guarantee correctness or speed for every request or machine.
+    87.6, 118.7, and 62.9 seconds on the measured Mac with adaptive reasoning.
+    The latest 628.5-second Linux run exceeded the limit. A new Linux timing
+    is still required. Local results do not guarantee speed on another machine.
 
 27. **How do you run the supplied moulinette evaluation?**
     In its directory, run `uv sync` and
@@ -746,3 +764,292 @@ one question at a time without the answers.
     Explain and change a token limit. Run with a separate request file. Add
     a supported definition or enum in a separate file. Trace a generation
     failure to its error message. Recheck changed behaviour with relevant tests.
+
+31. **Why can the decoder finish part of a function name without the model?**
+    The model selects a prefix. If only one permitted name starts with that
+    prefix, the remaining text is fixed. The decoder supplies that text with
+    the SDK tokenizer. It does the same for a uniquely identified enum value.
+    It still asks the model when more than one permitted choice remains.
+
+## Speed audit (2026-10-11)
+
+The user reported 636.5 seconds for 11 requests on a 42 Linux computer.
+This exceeds the 300-second evaluation limit. The screenshots show Ubuntu
+22.04.5, an Intel Core Ultra 7 265, 20 logical CPUs and 15 GiB RAM. They show
+Intel graphics; the SDK likely used its CPU backend, but this was not measured
+on that computer. The home filesystem was full. A previous run processed all
+requests and then failed when creating `data/output`. Redirecting output to
+`/goinfre` allowed the next run to finish.
+
+### Measured bottleneck
+
+A fresh, instrumented public baseline on the local Apple M2 Pro / 16 GB Mac,
+Python 3.10.20, MPS, cached weights and `HF_HUB_OFFLINE=1` took **192.17 seconds**:
+6.62 seconds to load and 185.56 seconds to process. All 11 results were correct.
+
+| Work inside the batch | SDK calls | SDK time |
+| --- | --- | --- |
+| Internal reasoning | 528 | 139.05 s |
+| Constrained function and argument generation | 153 | 42.13 s |
+| All other batch work | — | 4.38 s |
+
+SDK inference accounts for 97.6% of the batch. Internal reasoning alone accounts
+for 74.9%. Optimizing the Python grammar cannot remove the principal cost.
+The unchanged SDK evaluates the entire accumulated context on every logits
+request. Its public interface exposes no reusable key/value cache or batch
+inference operation. The model is already loaded only once per application run.
+No SDK modification, private attribute access or direct framework import is
+introduced for this audit.
+
+`tests/audit_performance.py` measures the SDK boundary, model loading, context
+token counts, reasoning/value call counts and elapsed time. It also records the
+device, source hashes and thread environment. Later runs include package
+versions and peak process RSS; RSS does not include all accelerator allocations.
+Run it from `submission/` with a new output directory:
+
+```sh
+HF_HUB_OFFLINE=1 uv run python ../tests/audit_performance.py \
+  --suite public --output ../tests/performance/new-public
+uv run python ../tests/check_accuracy.py ../tests/performance/new-public/results.json
+```
+
+Use `--suite private`, `changed` or `probes` for the other sets. For private and
+changed results, pass the same set name as the final `check_accuracy.py`
+argument. The probe suite scores its own results. The optional `--budget`
+override is for experiments only. Timing success is not an accuracy check.
+
+### Rejected shorter-reasoning experiments
+
+With the original tool formatting, budgets of zero, eight and sixteen tokens
+passed 14/17, 16/17 and 15/17 diagnostic checks respectively. Zero tokens caused
+an empty request to reach the 256-token value limit after 83.24 seconds.
+Quoted-template and derived-regex cases also exposed semantic errors. These
+variants are not accepted solely because ordinary examples run faster.
+Their complete results and measurements remain in `tests/performance/`.
+The 32-token experiment passed 15/17 checks. A 24-token experiment combined
+with compact JSON tool definitions passed 14/17. Neither is retained. The
+original 48-token budget, tool descriptions, copy bonus and chat context remain.
+
+### Output storage
+
+The application now checks the output directory and writes and flushes a temporary
+byte before loading the model. It detects an already unusable or full output
+filesystem early, cleans the probe and preserves existing output. This does
+not reserve space for the final JSON or guarantee that space remains available.
+Final output still uses atomic replacement after a successful complete batch.
+Two regression tests cover failure before model loading and preservation of an
+existing result after a simulated full-disk write error.
+
+### Completing an identified finite choice
+
+When a generated prefix matches only one function name, enum value or marker
+label, the remaining bytes are determined. The decoder now encodes that suffix
+with the public SDK and appends its tokens, without another inference call.
+Model logits still decide between distinct permitted alternatives. Ordinary
+unrestricted string and number values still use constrained token selection.
+
+The shortcut waits if the suffix begins inside a split UTF-8 character. It also
+falls back to ordinary generation if the encoded suffix would exceed either
+the value-token budget or the context limit. No invalid completion is invented
+after a generation failure. Tokenization of a forced suffix can differ from
+greedy generation, so real-model accuracy remains part of validation.
+
+The first full completion regression run passed **17/17**, including all prior
+short-reasoning failures. The context-limit guard was then covered by an
+additional unit regression before the full batch benchmarks. All **53 offline
+tests**, flake8 and the required mypy checks pass. The supplied SDK and original
+inputs remain unchanged.
+
+### CPU thread experiments and target limitation
+
+The same first public request, with 48 reasoning tokens and the original
+decoder, was run through the SDK's public `device="cpu"` option. These are
+single samples on the 10-logical-CPU Apple M2 Pro, not Intel Linux measurements:
+
+| OMP and MKL thread limit | Batch time | Load plus batch | Peak process RSS |
+| --- | --- | --- | --- |
+| 20 | 42.27 s | 47.43 s | 3.26 GiB |
+| 8 | 65.02 s | 72.47 s | 3.19 GiB |
+| 4 | 91.39 s | 102.09 s | 3.19 GiB |
+
+All three produced the same correct call with 57 SDK requests. The trials were
+sequential on a live workstation; thread count is not isolated from system
+load or thermal effects. Twenty threads also exceed this Mac's logical CPU
+count. These results do not establish an optimal Intel setting. No automatic
+thread cap is added. Thread limits are controlled through the documented
+[PyTorch environment settings](https://docs.pytorch.org/docs/2.14/threading_environment_variables.html).
+
+On the 42 computer, compare the normal run against an explicit setting using
+the same cached model, inputs and available disk space:
+
+```sh
+HF_HUB_OFFLINE=1 uv run python -m src \
+  --output "/goinfre/$USER/call-me-maybe-output/default.json"
+OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 HF_HUB_OFFLINE=1 uv run python -m src \
+  --output "/goinfre/$USER/call-me-maybe-output/thread8.json"
+cmp "/goinfre/$USER/call-me-maybe-output/default.json" \
+  "/goinfre/$USER/call-me-maybe-output/thread8.json"
+```
+
+An identical file establishes repeatability, not semantic accuracy by itself.
+Run the supplied evaluator as well. Repeat timings if results vary, and retain
+the faster setting only if accuracy is preserved. `HF_HUB_OFFLINE=1` assumes the
+model has already been downloaded. A result below 300 seconds on this Mac does
+not demonstrate the required Linux result; that measurement is still pending.
+
+### Final measured batches
+
+All three final batches used the complete revised application, including the
+context-limit guard, unchanged 48-token reasoning and unchanged tool formatting.
+Each benchmark's source hashes match the final application. Python 3.10.20,
+MPS on the Apple M2 Pro, cached model files and `HF_HUB_OFFLINE=1` were used.
+
+| Set | Correct / valid calls | Model load | Batch | Total | SDK calls |
+| --- | --- | --- | --- | --- | --- |
+| Public | 11/11 | 6.36 s | 178.82 s | 185.18 s | 650 |
+| Private | 11/11 | 5.71 s | 222.37 s | 228.08 s | 668 |
+| Changed functions | 10/10 | 9.03 s | 155.71 s | 164.74 s | 562 |
+
+Independent accuracy checks passed all 32 calls. All three JSON files are
+byte-identical to their previous correct `completed_*_results.json` files.
+The public comparison is from fresh runs in this audit: **192.17 to 185.18
+seconds**, a **3.6% reduction**. It removes 31 SDK requests, reducing constrained
+generation requests from 153 to 122. Reasoning remains at 528 requests and
+dominates total cost. This is a modest improvement, not evidence of a
+five-minute Linux result.
+
+Artifacts are `tests/performance/completion-public/`, `completion-private/`
+and `completion-changed/`, each containing output and metrics. The 17/17 stress
+result is in `completion-probes/`. The unchanged supplied grader previously
+passed the identical public/private output files; it was not rerun during this
+audit. The independent schema and semantic checks were rerun on every final
+batch. No dependencies, SDK files, supplied inputs or unrelated projects changed.
+
+
+## Linux storage and adaptive reasoning (2026-10-13)
+
+The latest supplied school screenshot reports **628.5 seconds** for the public
+11-prompt batch. A separate screenshot shows the home filesystem at 100% with
+only 76 KB available; `.venv/` occupies 5.5 GB and `model/` 1.5 GB there.
+The changes in this section build on the pre-existing speed-audit work above.
+
+### Storage behavior
+
+`make install`, `make run`, `make debug` and `make lint` now prepare external
+storage automatically when `/goinfre` exists. The default root is
+`/goinfre/$(id -un)/call-me-maybe`, overridable with `GOINFRE=/absolute/path`.
+Existing `.venv/`, `model/` and `data/output/` directories are moved and replaced
+by links. The same required command, imports and output pathname continue to
+work. The `.gitignore` entries also exclude symlinks, not just directories.
+Makefile commands export `UV_CACHE_DIR`, `UV_PYTHON_INSTALL_DIR` and `HF_HOME`
+under that root. Model weights use the resolved `model/` path through the
+existing `HF_HUB_CACHE` configuration.
+
+The preflight checks every destination before moving a project directory.
+An existing destination from another checkout, an unrelated source symlink,
+a non-directory source or a relative storage root fails clearly. Matching
+links are repeatable, and their missing targets are recreated after storage
+is cleared. `GOINFRE=` disables setup without relocating existing links back.
+The cache is local to the machine and can be cleared; outputs must be saved
+elsewhere when permanence matters. `make clean` removes only the original
+small Python/type-checker caches.
+
+Eight migration tests pass. Real uv smoke checks passed for both a fresh and
+an existing environment. A clean 16-file standalone export passed offline,
+frozen dependency installation, the ordinary entrypoint, required lint/type
+checks, and an empty-batch write through the external output link. Its SDK
+was installed from the exported copy, without another project's source.
+The supplied SDK and demonstration inputs remain byte-identical to their ZIPs.
+
+### Reasoning policy and accuracy gate
+
+The unchanged SDK recomputes the entire input context for every token. A fresh
+baseline public run took 185.2 seconds on the Mac: 528 reasoning calls consumed
+139.7 seconds; 122 other inference calls consumed 34.2 seconds.
+
+The decoder now asks the model a separate constrained boolean question about
+whether the request's input arguments need analysis. A true answer retains the
+48-token reasoning cap. Otherwise, quotes, backslashes, line breaks, tabs or
+braces retain an eight-token minimum; simpler requests skip reasoning. This
+punctuation check controls only effort, never a function name or argument value.
+The decision's tokens never enter the function-calling context. Blank requests
+fail immediately. Function selection, scalar masks, copy preference, finite
+choice completion and output validation otherwise retain their existing behavior.
+
+Always disabling/shortening reasoning and rebuilding argument contexts caused
+quoted-text or derived-pattern regressions and were discarded. Three model
+labels for effort added unnecessary analysis on simple requests. A first
+zero-or-48 policy passed public/private and all 17 stress checks but scored
+9/10 on changed functions: a quoted message was altered. The eight-token
+literal minimum fixed that recorded regression. Those initial policy results
+remain under `tests/performance/adaptive-*` as intermediate evidence, not final
+validation. Final runs use `optimized-*` directories.
+
+Sixty-six unit tests, flake8 and the required mypy flags pass. New tests cover
+constrained effort selection, the literal minimum, full analysis when selected,
+isolation of the decision context, blank-input handling and storage migration.
+No dependencies, model, private SDK access, direct inference-library imports,
+thread caps or test-specific function routing were introduced.
+
+### Final MPS measurements
+
+All runs use the same Apple M2 Pro / 16 GB workstation, Python 3.10.20, cached
+Qwen3-0.6B and `HF_HUB_OFFLINE=1`. Timings include model loading.
+
+| Set | Correct / valid | Model load | Batch | Total | SDK calls |
+| --- | --- | --- | --- | --- | --- |
+| Public | 11/11 | 6.12 s | 81.46 s | 87.58 s | 293 |
+| Private | 11/11 | 5.92 s | 112.82 s | 118.74 s | 359 |
+| Changed functions | 10/10 | 5.90 s | 56.99 s | 62.90 s | 212 |
+
+All three outputs are byte-identical to the previous correct `completed_*`
+answers. The independent schema and semantic checker was rerun on all 32 calls.
+The public reduction from the fresh 185.20-second baseline is **52.7%**, or
+**2.11 times the throughput** for that batch. Model calls drop from 650 to 293;
+reasoning calls drop from 528 to 160. Eleven additional model calls make the
+analysis decisions. This is evidence from the Mac, not a measured Linux result.
+
+Artifacts live in `tests/performance/optimized-{public,private,changed}/`.
+Their metrics record versions, hardware, device, thread settings and source
+hashes. The public run immediately preceded a one-line docstring shortening for
+flake8; its executed decoding behavior is unchanged. Private and changed runs
+match the final source hashes. No benchmark output or hash was rewritten.
+
+Reproduce from `submission/` with a new output directory:
+
+```sh
+HF_HUB_OFFLINE=1 uv run python ../tests/audit_performance.py \
+  --suite public --output ../tests/performance/new-optimized-public
+uv run python ../tests/check_accuracy.py \
+  ../tests/performance/new-optimized-public/results.json
+```
+
+Omit `--budget` to use the adaptive policy. An explicit `--budget` is a private
+experiment override. It is not a production application option.
+
+The final-source stress run in `optimized-probes/` passes **17/17**: three
+expected rejections and fourteen correct calls. It took 134.2 seconds including
+model loading on MPS. All its recorded source hashes match the final files.
+
+### CPU verification and remaining Linux check
+
+The final public batch also completed through the SDK's public `device="cpu"`
+option on the development Mac, with `OMP_NUM_THREADS=20`, `MKL_NUM_THREADS=20`
+and cached weights. Loading took 5.0 seconds and the batch took 915.7 seconds,
+for **920.7 seconds total**. The independent checker passes all 11 calls.
+The artifacts are `tests/performance/optimized-cpu-public/`.
+
+The CPU run used the same 293 model calls and identical per-prompt context-token
+counts as the MPS run. Its first eight prompts took 54.3 seconds combined;
+the final three took 98.4, 226.0 and 537.0 seconds. The measured increase is in
+SDK inference time, not extra generated tokens. This run failed the five-minute
+target. It was performed on a live workstation, and it does not isolate thread
+overhead, system contention or another backend cause. Twenty threads exceed
+this Mac's ten logical CPUs; these results do not justify a production thread
+cap or predict a time on the Intel school computer.
+
+The revised implementation therefore still needs a timed run on the 42 Linux
+computer. Copy the updated submission there, run `make install` to migrate
+storage, then run `HF_HUB_OFFLINE=1 make run` after the model is cached. Check
+accuracy as well as the printed elapsed time. The mandatory Linux timing
+checkbox remains open; the MPS speedup is not a claimed Linux acceptance result.

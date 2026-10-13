@@ -61,6 +61,12 @@ def main() -> int:
         }:
             raise ValueError("Output must not overwrite an input file")
         functions, prompts = load_inputs(args.functions_definition, args.input)
+        if args.output.is_dir():
+            raise ValueError("Output path is a directory")
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryFile(dir=args.output.parent) as probe:
+            probe.write(b"\n")
+            probe.flush()
         calls: list[Call] = []
         if prompts:
             from src.decoder import load_decoder

@@ -1,18 +1,21 @@
 """Private offline checks; run from submission with unittest discovery."""
 
 import json
+import errno
+import io
 import random
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from contextlib import redirect_stderr
 from unittest.mock import Mock, patch
 
 import numpy as np
 from pydantic import ValidationError
 
-from src.__main__ import write_calls
+from src.__main__ import main, write_calls
 from src.decoder import Decoder, vocabulary_bytes
 from src.grammar import ScalarGrammar
 from src.schema import Call, Function, load_inputs, read_json, validate_call
@@ -242,6 +245,31 @@ class FileTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertNotIn("Traceback", result.stderr)
         self.assertEqual(list(self.root.glob(".function-calls-*")), [])
+
+    def test_unusable_output_fails_before_model_loading(self):
+        self.output.mkdir()
+        result = self.cli()
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("Loading", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_full_disk_fails_before_inference_and_preserves_output(self):
+        self.output.write_text("previous")
+        argv = ["src", "--functions_definition", str(self.definitions),
+                "--input", str(self.prompts), "--output", str(self.output)]
+        stream = Mock()
+        stream.write.side_effect = OSError(errno.ENOSPC, "No space left on device")
+        errors = io.StringIO()
+        with patch.object(sys, "argv", argv), redirect_stderr(errors), \
+                patch("src.__main__.tempfile.TemporaryFile") as temporary, \
+                patch("src.decoder.load_decoder") as load:
+            temporary.return_value.__enter__.return_value = stream
+            self.assertEqual(main(), 1)
+        load.assert_not_called()
+        temporary.return_value.__exit__.assert_called_once()
+        self.assertIn("No space left on device", errors.getvalue())
+        self.assertNotIn("Loading", errors.getvalue())
+        self.assertEqual(self.output.read_text(), "previous")
 
     def test_atomic_write_failure_cleans_temporary_file(self):
         self.output.write_text("previous")

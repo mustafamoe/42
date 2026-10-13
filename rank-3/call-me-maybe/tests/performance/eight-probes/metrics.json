@@ -1,0 +1,262 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "probes",
+  "reasoning_budget": 8,
+  "source_sha256": {
+    "decoder.py": "441b988d2b9c60b93245d8a0aac07094c71221fb870c5d540d71d5415aabd55b",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "model_load_seconds": 5.756162540987134,
+  "batch_seconds": 81.48072929104092,
+  "total_seconds": 87.23689183202805,
+  "exit_status": 1,
+  "prompts": [
+    {
+      "prompt": "Which planet is closest to the Sun?",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.731005708046723,
+        "context_tokens": 4452
+      },
+      "values": {
+        "calls": 5,
+        "seconds": 1.293102748983074,
+        "context_tokens": 2846
+      },
+      "seconds": 4.152948917006142
+    },
+    {
+      "prompt": "",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.0325007519568317,
+        "context_tokens": 4388
+      },
+      "values": {
+        "calls": 5,
+        "seconds": 1.2791810830822214,
+        "context_tokens": 2806
+      },
+      "seconds": 3.4180160419782624
+    },
+    {
+      "prompt": "Please help me with it.",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.9985497081070207,
+        "context_tokens": 4436
+      },
+      "values": {
+        "calls": 5,
+        "seconds": 1.2503376239910722,
+        "context_tokens": 2836
+      },
+      "seconds": 3.366340499953367
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.343839500157628,
+        "context_tokens": 5244
+      },
+      "values": {
+        "calls": 15,
+        "seconds": 4.419900375825819,
+        "context_tokens": 10157
+      },
+      "seconds": 7.0546693750075065
+    },
+    {
+      "prompt": "Format template: Please say \"welcome\" to {visitor}",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.332318000961095,
+        "context_tokens": 5252
+      },
+      "values": {
+        "calls": 16,
+        "seconds": 4.752773954940494,
+        "context_tokens": 10860
+      },
+      "seconds": 7.356441666954197
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN path C:\\temp END",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.9854396239388734,
+        "context_tokens": 4420
+      },
+      "values": {
+        "calls": 16,
+        "seconds": 2.004640919098165,
+        "context_tokens": 3855
+      },
+      "seconds": 4.264414125005715
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN first line\nsecond line END",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.0073998320149258,
+        "context_tokens": 4428
+      },
+      "values": {
+        "calls": 17,
+        "seconds": 2.2054352910490707,
+        "context_tokens": 4075
+      },
+      "seconds": 4.588489000045229
+    },
+    {
+      "prompt": "Read /tmp/report.txt using latin-1 encoding.",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.417139252065681,
+        "context_tokens": 2804
+      },
+      "values": {
+        "calls": 15,
+        "seconds": 2.836943792179227,
+        "context_tokens": 5583
+      },
+      "seconds": 4.635598875000142
+    },
+    {
+      "prompt": "Set the task status to done.",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.5324732509907335,
+        "context_tokens": 2772
+      },
+      "values": {
+        "calls": 7,
+        "seconds": 1.2886946250218898,
+        "context_tokens": 2540
+      },
+      "seconds": 3.034689916006755
+    },
+    {
+      "prompt": "Replace cat followed by one or more digits in 'cat12 dog cat cat7' with TOKEN.",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.2468146269675344,
+        "context_tokens": 4556
+      },
+      "values": {
+        "calls": 23,
+        "seconds": 6.27837483206531,
+        "context_tokens": 13720
+      },
+      "seconds": 9.006233582971618
+    },
+    {
+      "prompt": "Greet shrek",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.9638437919784337,
+        "context_tokens": 4420
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 2.2244394989102148,
+        "context_tokens": 5125
+      },
+      "seconds": 4.350925415987149
+    },
+    {
+      "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.9913590009091422,
+        "context_tokens": 4556
+      },
+      "values": {
+        "calls": 30,
+        "seconds": 7.971027499064803,
+        "context_tokens": 18017
+      },
+      "seconds": 10.433861875033472
+    },
+    {
+      "prompt": "Archive the text between START and STOP: START caf\u00e9 \"hello\" STOP",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.0056184160057455,
+        "context_tokens": 2036
+      },
+      "values": {
+        "calls": 17,
+        "seconds": 1.6438892040168867,
+        "context_tokens": 2830
+      },
+      "seconds": 2.9333131249877624
+    },
+    {
+      "prompt": "Archive only the text inside <note> and </note>: <note>first\nsecond</note>",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.0902334990096278,
+        "context_tokens": 2092
+      },
+      "values": {
+        "calls": 19,
+        "seconds": 1.709362170076929,
+        "context_tokens": 2818
+      },
+      "seconds": 3.1106797499815
+    },
+    {
+      "prompt": "Save the literal message \"BEGIN path END\".",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.9550340420100838,
+        "context_tokens": 4388
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 2.2675019179587252,
+        "context_tokens": 5094
+      },
+      "seconds": 4.412078958004713
+    },
+    {
+      "prompt": "Archive the literal note \"START here STOP\".",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 0.9767955850111321,
+        "context_tokens": 1996
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 1.2378217940567993,
+        "context_tokens": 2408
+      },
+      "seconds": 2.375232958002016
+    },
+    {
+      "prompt": "Archive the text between << and >>: <<Use BEGIN and END literally>>",
+      "reasoning": {
+        "calls": 8,
+        "seconds": 1.0161134180380031,
+        "context_tokens": 2044
+      },
+      "values": {
+        "calls": 17,
+        "seconds": 1.6654143340419978,
+        "context_tokens": 2840
+      },
+      "seconds": 2.960298167017754
+    }
+  ]
+}

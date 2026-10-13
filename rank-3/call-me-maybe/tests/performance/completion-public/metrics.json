@@ -1,0 +1,186 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "public",
+  "reasoning_budget": 48,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "3f8f748dc2cbf23229b408103a5a6ca99fc6b8fb464bbd1e7e3096bfbca2c583",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 2648752128,
+  "model_load_seconds": 6.361208708025515,
+  "batch_seconds": 178.8205439169542,
+  "total_seconds": 185.1817526249797,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the sum of 2 and 3?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 13.214858039980754,
+        "context_tokens": 27816
+      },
+      "values": {
+        "calls": 7,
+        "seconds": 1.9398208759957924,
+        "context_tokens": 4330
+      },
+      "seconds": 15.453873624966945
+    },
+    {
+      "prompt": "What is the sum of 265 and 345?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.539582750061527,
+        "context_tokens": 28008
+      },
+      "values": {
+        "calls": 11,
+        "seconds": 3.009686913981568,
+        "context_tokens": 6886
+      },
+      "seconds": 15.888587458000984
+    },
+    {
+      "prompt": "Greet shrek",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.544742455123924,
+        "context_tokens": 27480
+      },
+      "values": {
+        "calls": 8,
+        "seconds": 2.304997082974296,
+        "context_tokens": 4878
+      },
+      "seconds": 15.213780124962796
+    },
+    {
+      "prompt": "Greet john",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 13.543681794952136,
+        "context_tokens": 27432
+      },
+      "values": {
+        "calls": 7,
+        "seconds": 2.1394545829389244,
+        "context_tokens": 4255
+      },
+      "seconds": 16.059128332999535
+    },
+    {
+      "prompt": "Reverse the string 'hello'",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.894005171954632,
+        "context_tokens": 27576
+      },
+      "values": {
+        "calls": 6,
+        "seconds": 1.647087959048804,
+        "context_tokens": 3668
+      },
+      "seconds": 14.830197166011203
+    },
+    {
+      "prompt": "Reverse the string 'world'",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.461359915789217,
+        "context_tokens": 27576
+      },
+      "values": {
+        "calls": 6,
+        "seconds": 1.6147590019972995,
+        "context_tokens": 3668
+      },
+      "seconds": 14.347405084001366
+    },
+    {
+      "prompt": "What is the square root of 16?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.510892753314693,
+        "context_tokens": 27768
+      },
+      "values": {
+        "calls": 6,
+        "seconds": 1.632095417007804,
+        "context_tokens": 3697
+      },
+      "seconds": 14.420070250052959
+    },
+    {
+      "prompt": "Calculate the square root of 144",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.48940658790525,
+        "context_tokens": 27720
+      },
+      "values": {
+        "calls": 7,
+        "seconds": 1.9353082509478554,
+        "context_tokens": 4314
+      },
+      "seconds": 14.725385207973886
+    },
+    {
+      "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.831598956952803,
+        "context_tokens": 28296
+      },
+      "values": {
+        "calls": 25,
+        "seconds": 7.2994760008878075,
+        "context_tokens": 16092
+      },
+      "seconds": 20.71022216696292
+    },
+    {
+      "prompt": "Replace all vowels in 'Programming is fun' with asterisks",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.468303625122644,
+        "context_tokens": 27864
+      },
+      "values": {
+        "calls": 19,
+        "seconds": 5.379394372052047,
+        "context_tokens": 12004
+      },
+      "seconds": 18.30773208400933
+    },
+    {
+      "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.686978168203495,
+        "context_tokens": 28392
+      },
+      "values": {
+        "calls": 20,
+        "seconds": 5.683144167123828,
+        "context_tokens": 12856
+      },
+      "seconds": 18.85372420802014
+    }
+  ]
+}

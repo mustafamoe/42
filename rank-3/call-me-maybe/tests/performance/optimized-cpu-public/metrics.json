@@ -1,0 +1,156 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "cpu",
+  "threads": {
+    "OMP_NUM_THREADS": "20",
+    "MKL_NUM_THREADS": "20"
+  },
+  "suite": "public",
+  "reasoning_budget": null,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "b23ab60b8e8771e7eb05eb38bf726222e3788942adeb03875b9e3b3f03c5a5dc",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 3662643200,
+  "model_load_seconds": 5.002031000040006,
+  "batch_seconds": 915.7153048329637,
+  "total_seconds": 920.7173358330037,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the sum of 2 and 3?",
+      "values": {
+        "calls": 8,
+        "seconds": 7.647213416988961,
+        "context_tokens": 4345
+      },
+      "seconds": 7.7821374160121195
+    },
+    {
+      "prompt": "What is the sum of 265 and 345?",
+      "values": {
+        "calls": 12,
+        "seconds": 7.737644458014984,
+        "context_tokens": 6713
+      },
+      "seconds": 7.929583958990406
+    },
+    {
+      "prompt": "Greet shrek",
+      "values": {
+        "calls": 9,
+        "seconds": 5.366101918043569,
+        "context_tokens": 4838
+      },
+      "seconds": 5.509254749980755
+    },
+    {
+      "prompt": "Greet john",
+      "values": {
+        "calls": 8,
+        "seconds": 4.754285749979317,
+        "context_tokens": 4262
+      },
+      "seconds": 4.885052957979497
+    },
+    {
+      "prompt": "Reverse the string 'hello'",
+      "values": {
+        "calls": 7,
+        "seconds": 4.25842466490576,
+        "context_tokens": 3774
+      },
+      "reasoning": {
+        "calls": 8,
+        "seconds": 5.414596666931175,
+        "context_tokens": 4436
+      },
+      "seconds": 9.813384292006958
+    },
+    {
+      "prompt": "Reverse the string 'world'",
+      "values": {
+        "calls": 7,
+        "seconds": 4.178347916982602,
+        "context_tokens": 3774
+      },
+      "reasoning": {
+        "calls": 8,
+        "seconds": 4.8995483329636045,
+        "context_tokens": 4436
+      },
+      "seconds": 9.216824666014872
+    },
+    {
+      "prompt": "What is the square root of 16?",
+      "values": {
+        "calls": 7,
+        "seconds": 4.200390624057036,
+        "context_tokens": 3759
+      },
+      "seconds": 4.315621624991763
+    },
+    {
+      "prompt": "Calculate the square root of 144",
+      "values": {
+        "calls": 8,
+        "seconds": 4.742420960101299,
+        "context_tokens": 4327
+      },
+      "seconds": 4.8677960420027375
+    },
+    {
+      "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+      "values": {
+        "calls": 26,
+        "seconds": 65.19189291604562,
+        "context_tokens": 16453
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 32.19891583791468,
+        "context_tokens": 28296
+      },
+      "seconds": 98.4025270420243
+    },
+    {
+      "prompt": "Replace all vowels in 'Programming is fun' with asterisks",
+      "values": {
+        "calls": 20,
+        "seconds": 71.72809183498612,
+        "context_tokens": 12356
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 152.5574057122576,
+        "context_tokens": 27864
+      },
+      "seconds": 225.95126833301038
+    },
+    {
+      "prompt": "Substitute the word 'cat' with 'dog' in 'The cat sat on the mat with another cat'",
+      "values": {
+        "calls": 21,
+        "seconds": 265.0650997060002,
+        "context_tokens": 13219
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 269.23802933306433,
+        "context_tokens": 28392
+      },
+      "seconds": 536.9980895000044
+    }
+  ]
+}

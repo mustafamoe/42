@@ -25,6 +25,28 @@ uv sync
 uv run python -m src
 ```
 
+On a 42 computer with `/goinfre`, use the Makefile first:
+
+```sh
+make install
+make run
+```
+
+The Makefile automatically uses `/goinfre/$(id -un)/call-me-maybe`. It moves
+existing `.venv/`, `model/` and `data/output/` directories there and leaves
+symlinks at their original paths. Existing weights and results are preserved;
+the ordinary `uv run python -m src` command and default output path still work.
+uv's package cache, managed Python downloads and Hugging Face auxiliary cache
+also use `/goinfre` during Makefile commands. No activation is necessary.
+
+Storage belonging to another checkout is never merged or overwritten. To use
+a different directory, pass `GOINFRE=/absolute/path` to each Makefile command.
+Without `/goinfre`, the layout stays local; `GOINFRE=` disables automatic
+relocation without moving existing links back. `make storage` performs only
+the relocation. This storage is local to
+the school computer and may be cleared: save results elsewhere before leaving,
+and rerun `make install` and `make run` if the environment or model disappears.
+
 The project requires Python 3.10; uv installs NumPy, Pydantic, the supplied local
 SDK and development checks from the lockfile. The SDK depends on PyTorch,
 Transformers and Hugging Face Hub. Application code uses the public SDK interface;
@@ -47,8 +69,8 @@ network lookups using the SDK dependency's standard offline setting:
 HF_HUB_OFFLINE=1 uv run python -m src
 ```
 
-This setting cannot download missing model files. CPU and CUDA execution were
-not benchmarked on the development Mac; the reported timings use MPS.
+This setting cannot download missing model files. The performance section
+distinguishes MPS and CPU measurements. CUDA was not benchmarked.
 
 Default input files:
 
@@ -58,7 +80,7 @@ Default input files:
 Default output: `data/output/function_calling_results.json`. The parent directory
 is created when writing. Output directories are excluded from Git.
 
-The Makefile provides `install`, `run`, `debug`, `clean` and `lint`. Debugging uses
+The Makefile provides `install`, `run`, `debug`, `clean`, `lint` and `storage`. Debugging uses
 Python's built-in `pdb`. Run `make lint` for flake8 and the subject's mypy flags.
 The supplied SDK is preserved verbatim and excluded from checks on authored code.
 
@@ -86,6 +108,9 @@ errors go to standard error. An empty prompt array produces `[]` without loading
 the model. Malformed files, duplicate keys or names, unsupported argument types,
 and invalid output paths fail clearly. Output cannot overwrite either input.
 An unsuccessful batch leaves an existing output file unchanged.
+Before model loading, a temporary write checks the output filesystem. An
+already full or unwritable output location fails early. This check does not
+reserve space for the final result.
 When the model selects rejection because no available function fits, the
 program reports `No available function matches this prompt` and exits 1.
 
@@ -101,10 +126,17 @@ program reports `No available function matches this prompt` and exits 1.
    prompt construction through the SDK, not a call to a tool-execution framework.
    Add an internal rejection tool for requests that cannot be fulfilled. Its
    name is made distinct from supplied names; it never appears in output.
-4. Allow up to 48 internal reasoning tokens before starting the tool call. Stop
-   earlier if the model finishes thinking. This short analysis helps distinguish
-   requested input values from computed results and derived patterns. It is not
-   written to the output file. Only this internal analysis is unconstrained.
+4. Ask the model a separate constrained boolean question: do these input
+   arguments need analysis, or can the supplied values be copied directly?
+   A `true` decision enables up to 48 internal reasoning tokens. Otherwise,
+   requests containing quotes, backslashes, line breaks, tabs or braces retain
+   an eight-token analysis floor to protect exact text; simpler requests skip
+   the pass. The decision uses the actual request and supplied definitions.
+   Punctuation determines only the minimum analysis budget; the model selects
+   all function names and argument values. The decision tokens never enter
+   the function-calling context. Blank requests fail immediately with a clear
+   error. The analysis and its decision are never written to the output file;
+   only the optional analysis uses unconstrained token selection.
 5. Supply `<tool_call>` and the fixed opening `{"name":`. Constrain the next value
    to a JSON-quoted supplied name or the internal rejection name. Selecting
    rejection raises a clear error before generating arguments.
@@ -113,6 +145,10 @@ program reports `No available function matches this prompt` and exits 1.
    comma. Reject invalid candidates before selection. The first valid candidate
    is the exact highest-scoring legal token, without scanning lower-scoring
    tokens that cannot win. The LLM therefore chooses the function.
+   When the generated prefix identifies exactly one allowed name, encode its
+   remaining text through the public SDK without another logits request.
+   The same rule applies to enum values and marker labels. It waits until a
+   UTF-8 character is complete and respects the value and context token limits.
 6. Keep the selected token IDs and internal analysis for ordinary requests.
    For explicitly announced marker blocks, first ask the model to identify the
    opening and closing labels from tokens present in the request. Present the
@@ -167,11 +203,12 @@ program reports `No available function matches this prompt` and exits 1.
    The original prompt is copied directly from validated input.
 
 Known structural text does not need model inference: it is fixed by the schema.
-Every output name and value is chosen from constrained model logits. The
-program does not repair arbitrary free-form model output or guess function names
-from keywords.
+The model selects between permitted alternatives. Once only one finite choice
+matches its generated prefix, the schema fixes the remaining text. Other values
+continue through constrained model logits. The program does not repair arbitrary
+free-form output or guess function names from keywords.
 
-The reasoning step and prompt aid interpretation; the scalar grammar and fixed
+The model-selected reasoning step and prompt aid interpretation; the scalar grammar and fixed
 structure enforce output validity. No test answers appear in application code.
 
 ## Design decisions
@@ -184,8 +221,13 @@ structure enforce output validity. No test answers appear in application code.
   A rejected prompt fails the batch without replacing any existing output.
 - Greedy decoding makes selection simple and reproducible for a given logits
   sequence. There is no retry pipeline, model fine-tuning, batching or KV cache.
-- A bounded reasoning pass improves interpretation before constrained generation.
-  Its 48-token limit balances extraction accuracy against the runtime target.
+- Finishing a uniquely identified name or enum avoids redundant model calls.
+  No decision between different allowed values is delegated to a keyword rule.
+- A constrained model decision retains up to 48 tokens when analysis is needed.
+  Direct extraction can skip that pass; punctuation-heavy literal text retains
+  an eight-token minimum. This avoids paying the same inference cost for every
+  request. Removing analysis indiscriminately caused quoted-text and regex
+  regressions in real-model checks.
 - Explicit marker blocks use a short, constrained delimiter-identification
   task. Quoted literal messages bypass it. Ordinary requests retain their
   original model context and analysis.
@@ -198,28 +240,42 @@ structure enforce output validity. No test answers appear in application code.
 
 ## Performance analysis
 
-Real-model measurements on 2026-10-10: Apple M2 Pro, 16 GB RAM, macOS 27.0,
+Real-model measurements on 2026-10-13: Apple M2 Pro, 16 GB RAM, macOS 27.0,
 Python 3.10.20, the supplied SDK using MPS, with model files already downloaded.
 
 | Test set | Correct calls | Schema-compliant calls | Runtime |
 | --- | --- | --- | --- |
-| Supplied public prompts | 11/11 (100%) | 11/11 | 191.4 seconds |
-| Additional private prompts | 11/11 (100%) | 11/11 | 234.7 seconds |
-| Changed functions and prompts | 10/10 (100%) | 10/10 | 167.6 seconds |
+| Supplied public prompts | 11/11 (100%) | 11/11 | 87.6 seconds |
+| Additional private prompts | 11/11 (100%) | 11/11 | 118.7 seconds |
+| Changed functions and prompts | 10/10 (100%) | 10/10 | 62.9 seconds |
 
-All three batches met the subject's 90% accuracy and five-minute targets on this
-machine. Runtime includes model loading, with cached weights and
-`HF_HUB_OFFLINE=1`. The test sets are small and do not establish accuracy on every
-unseen function set. The private run had 65.3 seconds of headroom; hardware,
-system load and longer requests can increase runtime. The unchanged supplied
-moulinette scored both public and private results 11/11 without tester-side
-numeric conversions. Independent checks also verify exact keys, types, prompt
-preservation and expected function names and argument values.
+All three batches met the accuracy and five-minute targets on this machine.
+Runtime includes model loading with cached weights and `HF_HUB_OFFLINE=1`.
+Independent checks verify exact keys, types, prompt preservation and expected
+names and argument values. All 32 calls are correct, and all three output files
+are byte-identical to the previous correct batches. The unchanged supplied
+moulinette previously scored those identical public/private answers 11/11.
 
-All three JSON outputs are byte-identical to the earlier correct runs, while
-candidate ranking reduces processing time. Quoted-template, letter-case and
-regex cases also pass in separate regression runs. These are
-limited repeatability checks, not a guarantee for all inputs or hardware.
+A fresh fixed-reasoning public baseline took 185.2 seconds. Adaptive analysis
+reduced runtime to 87.6 seconds, a 52.7% reduction. SDK calls fell from 650 to
+293: reasoning fell from 528 to 160 calls, with 11 additional calls for the
+analysis decisions. The full 48-token budget remains available for requests
+requiring it; the literal minimum protects the tested quoted-text cases.
+These measurements do not establish accuracy or timing for every unseen input.
+
+The latest reported 42 Linux run took 628.5 seconds before these changes.
+The revised application still needs timing and accuracy verification on that
+computer. A separate CPU-only public run on the development Mac, with 20 OMP
+and MKL threads, returned all 11 correct calls but took 920.7 seconds including
+loading. It made the same 293 model calls as MPS; inference became sharply
+slower during the final three requests. That run failed the five-minute target
+and does not establish the cause or an appropriate Linux thread setting.
+CPU thread limits can be tested through `OMP_NUM_THREADS` and
+`MKL_NUM_THREADS`; no automatic limit is imposed. Use the same cached model and
+inputs when comparing settings. Model downloads, hardware, system load and
+longer inputs can affect elapsed time. The Makefile's `/goinfre` setup addresses
+the full-home-filesystem failure, and a temporary write checks the output
+location before inference begins.
 
 The two previously failing marker-delimited requests now extract the correct
 text, preserving their backslash and newline. Additional checks cover different
@@ -235,12 +291,13 @@ arguments may be inferred incorrectly by the small model. Model downloads and
 hardware differences affect runtime; the first download is not part of the
 reported processing time.
 
-For vocabulary size V, generated length T, maximum scalar byte length L and K
+For a fixed schema, vocabulary size V, model-selected length T, maximum scalar
+byte length L and K
 candidates inspected per token, ranking and prefix checks cost
 O(T * (V log V + K * L)), apart from model inference. K can be V in the worst
 case, but ordinary requests usually inspect far fewer candidates.
-Internal reasoning adds at
-most 48 model calls per prompt. Memory holds the model,
+The analysis decision adds a small constrained boolean generation. Optional
+internal reasoning adds at most 48 model calls per prompt. Memory holds the model,
 vocabulary, current context, encoded copy source and completed calls. Literal
 scoring also searches the request for each candidate, so longer requests add
 work beyond the schema checks. Finite generation limits bound
@@ -267,7 +324,7 @@ runaway continuation; they do not promise completion for arbitrary input sizes.
 
 ## Testing strategy
 
-Forty-seven private tests are kept outside the evaluation repository. They
+Sixty-six private tests are kept outside the evaluation repository. They
 exercise valid scalar prefixes at every byte boundary, malformed escapes and
 numbers, partial Unicode, random escaped strings, token masking against higher
 invalid logits, non-finite logits and generation limits. File and CLI checks
@@ -280,6 +337,12 @@ copied strings and derived strings sharing a literal prefix.
 Additional checks compare ranked selection with exhaustive masking across
 random scores, ties and non-finite values, and verify ordinary tool contexts,
 arbitrary delimiter labels, literal-marker preservation and content whitespace.
+Further checks cover early output failures, completion only after finite choices
+are disambiguated, split UTF-8, and both token limits during completion.
+Adaptive-reasoning tests verify boolean masking, the three budgets, isolation of the
+analysis decision from the function context, and immediate blank-input failure.
+Makefile checks cover storage relocation, idempotency, conflicting destinations,
+existing links, cleared storage and cache environment settings.
 
 Real-model validation uses the supplied inputs and a separate changed function
 set with multiplication, message storage, reminders, null and zero-argument calls.
@@ -317,6 +380,8 @@ Repeat with edited input files to verify that selection is not hardcoded.
   type validation and rejecting extra fields.
 - [uv project guide](https://docs.astral.sh/uv/guides/projects/) - dependency
   locking and project execution.
+- [uv environment variables](https://docs.astral.sh/uv/reference/environment/) -
+  placing package caches and managed Python installations in external storage.
 - [Hugging Face offline setting](https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhuboffline)
   - using already-downloaded model files without network lookups.
 - [Hugging Face cache configuration](https://huggingface.co/docs/huggingface_hub/package_reference/environment_variables#hfhubcache)

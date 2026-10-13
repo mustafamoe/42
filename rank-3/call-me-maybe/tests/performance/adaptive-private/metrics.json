@@ -1,0 +1,151 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "private",
+  "reasoning_budget": null,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "b2d0dd1c9b1e0ea9022c83b73f686111cfd3725137818e1a21082a718cdc76e4",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 2785312768,
+  "model_load_seconds": 5.910794791998342,
+  "batch_seconds": 108.75910937500885,
+  "total_seconds": 114.66990416700719,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the product of 3 and 5?",
+      "values": {
+        "calls": 8,
+        "seconds": 2.9203440831042826,
+        "context_tokens": 5070
+      },
+      "seconds": 3.0699787500198
+    },
+    {
+      "prompt": "What is the product of 12 and 4?",
+      "values": {
+        "calls": 9,
+        "seconds": 2.588139416067861,
+        "context_tokens": 5752
+      },
+      "seconds": 2.7278061250108294
+    },
+    {
+      "prompt": "Is 4 an even number?",
+      "values": {
+        "calls": 6,
+        "seconds": 1.681260333978571,
+        "context_tokens": 3699
+      },
+      "seconds": 1.7768622909788974
+    },
+    {
+      "prompt": "Is 7 an even number?",
+      "values": {
+        "calls": 6,
+        "seconds": 1.6746165418880992,
+        "context_tokens": 3699
+      },
+      "seconds": 1.7707932079792954
+    },
+    {
+      "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years",
+      "values": {
+        "calls": 26,
+        "seconds": 8.541453081241343,
+        "context_tokens": 19132
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.771671419031918,
+        "context_tokens": 33288
+      },
+      "seconds": 23.871538334002253
+    },
+    {
+      "prompt": "Execute SQL query 'SELECT * FROM users' on the production database",
+      "values": {
+        "calls": 13,
+        "seconds": 3.8677964179660194,
+        "context_tokens": 8482
+      },
+      "seconds": 4.084985041001346
+    },
+    {
+      "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database",
+      "values": {
+        "calls": 21,
+        "seconds": 6.912822579906788,
+        "context_tokens": 15086
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.864630082040094,
+        "context_tokens": 32904
+      },
+      "seconds": 22.25868187501328
+    },
+    {
+      "prompt": "Read the file at /home/user/data.json with utf-8 encoding",
+      "values": {
+        "calls": 16,
+        "seconds": 4.801095831091516,
+        "context_tokens": 10519
+      },
+      "seconds": 5.052018083981238
+    },
+    {
+      "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding",
+      "values": {
+        "calls": 19,
+        "seconds": 5.684762958087958,
+        "context_tokens": 12571
+      },
+      "seconds": 5.979712292028125
+    },
+    {
+      "prompt": "Format template: Hello {user}'s profile!",
+      "values": {
+        "calls": 13,
+        "seconds": 4.079272042028606,
+        "context_tokens": 9003
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.421236372145358,
+        "context_tokens": 32376
+      },
+      "seconds": 18.865308416017797
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "values": {
+        "calls": 14,
+        "seconds": 4.40045962377917,
+        "context_tokens": 9742
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.487763831100892,
+        "context_tokens": 32424
+      },
+      "seconds": 19.288988709042314
+    }
+  ]
+}

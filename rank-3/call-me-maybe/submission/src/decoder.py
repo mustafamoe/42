@@ -19,6 +19,7 @@ MODEL_DIRECTORY = Path("model")
 CONTEXT_LIMIT = 32768
 VALUE_TOKEN_LIMIT = 256
 REASONING_TOKEN_LIMIT = 48
+LITERAL_REASONING_TOKEN_LIMIT = 8
 COPY_LOGIT_BONUS = 3.5
 
 
@@ -169,7 +170,21 @@ class Decoder(BaseModel):
                 raw = b'"'
         else:
             ids.extend(prefix_ids)
-        for _ in range(remaining):
+        for step in range(remaining):
+            matches = [choice for choice in grammar.choices
+                       if choice.startswith(raw.lstrip())]
+            if len(matches) == 1:
+                suffix = matches[0][len(raw.lstrip()):]
+                try:
+                    completion = suffix.decode("utf-8")
+                except UnicodeDecodeError:
+                    pass
+                else:
+                    tokens = self.encode(completion)
+                    if (len(tokens) <= remaining - step
+                            and len(ids) + len(tokens) <= CONTEXT_LIMIT):
+                        ids.extend(tokens)
+                        return cast(Scalar, json.loads(matches[0][:-1]))
             token_id = self.select_token(
                 ids, raw, grammar, copy_pending,
             )
@@ -278,6 +293,34 @@ class Decoder(BaseModel):
         return (prompt[:introduction.start()].rstrip() + ":\n" + content
                 + prompt[end + len(closing):])
 
+    def reasoning_budget(self, prompt: str, functions: list[Function]) -> int:
+        """Choose analysis with the model, with a minimum for literal text."""
+        definitions = "\n".join(
+            item.model_dump_json(exclude_defaults=True) for item in functions
+        ).replace("<", "\\u003c")
+        text = (
+            "<|im_start|>system\nDecide if preparing the input arguments "
+            "for a function call needs analysis. Return false if all required "
+            "input values are explicitly supplied and only literal copying "
+            "is needed. Return true if any argument must be constructed, "
+            "inferred, or is missing, or the request is unclear. "
+            "Constructing patterns or expressions from descriptions counts "
+            "as analysis. Do not consider the work performed by the function "
+            "itself. Answer a JSON object with needs_analysis.\nFunctions:\n"
+            + definitions + "<|im_end|>\n<|im_start|>user\n" + prompt
+            + "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n{"
+        )
+        needs_analysis = self.generate(
+            self.encode(text), ScalarGrammar(
+                kind="boolean", delimiter="}", choices=(b"true}", b"false}"),
+            ), '"needs_analysis":',
+        )
+        if needs_analysis:
+            return REASONING_TOKEN_LIMIT
+        if any(character in prompt for character in "\"'\\\n\r\t{}"):
+            return LITERAL_REASONING_TOKEN_LIMIT
+        return 0
+
     def reason(
         self, ids: list[int], budget: int = REASONING_TOKEN_LIMIT,
     ) -> None:
@@ -307,6 +350,8 @@ class Decoder(BaseModel):
         Returns:
             A call containing every parameter of the selected function.
         """
+        if not prompt.strip():
+            raise ValueError("No available function matches this prompt")
         rejection_name = "no_matching_function"
         while any(item.name == rejection_name for item in functions):
             rejection_name = "_" + rejection_name
@@ -321,7 +366,7 @@ class Decoder(BaseModel):
         })
         available = functions + [rejection]
         ids = self.encode(self.context(prompt, available))
-        self.reason(ids)
+        self.reason(ids, budget=self.reasoning_budget(prompt, available))
         choices = tuple(
             json.dumps(item.name, ensure_ascii=False).encode("utf-8") + b","
             for item in available

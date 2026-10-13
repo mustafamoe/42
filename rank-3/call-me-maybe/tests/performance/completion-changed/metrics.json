@@ -1,0 +1,172 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "changed",
+  "reasoning_budget": 48,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "3f8f748dc2cbf23229b408103a5a6ca99fc6b8fb464bbd1e7e3096bfbca2c583",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 1541079040,
+  "model_load_seconds": 9.029187333013397,
+  "batch_seconds": 155.70774874999188,
+  "total_seconds": 164.73693608300528,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "Multiply 7 by 9.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 13.542637000908144,
+        "context_tokens": 27192
+      },
+      "values": {
+        "calls": 6,
+        "seconds": 1.6105204580817372,
+        "context_tokens": 3640
+      },
+      "seconds": 15.496741458948236
+    },
+    {
+      "prompt": "What is the product of -2.5 and 4?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.258076750207692,
+        "context_tokens": 27480
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 2.442464583029505,
+        "context_tokens": 5533
+      },
+      "seconds": 15.014654500002507
+    },
+    {
+      "prompt": "Multiply 1234567890123 by 2.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.641533747955691,
+        "context_tokens": 27768
+      },
+      "values": {
+        "calls": 18,
+        "seconds": 5.155355749942828,
+        "context_tokens": 11266
+      },
+      "seconds": 18.248337083030492
+    },
+    {
+      "prompt": "Save the empty message: \"\".",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.881722127844114,
+        "context_tokens": 27144
+      },
+      "values": {
+        "calls": 4,
+        "seconds": 1.1791126659954898,
+        "context_tokens": 2407
+      },
+      "seconds": 14.304380832996685
+    },
+    {
+      "prompt": "Save this exact message: \"caf\u00e9 \u0645\u0631\u062d\u0628\u0627 \ud83d\ude00\".",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 13.146243749943096,
+        "context_tokens": 27480
+      },
+      "values": {
+        "calls": 10,
+        "seconds": 2.940438792051282,
+        "context_tokens": 6133
+      },
+      "seconds": 16.438532917003613
+    },
+    {
+      "prompt": "Save this exact message (between single quotes): 'She said \"hello\".'",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.930741039162967,
+        "context_tokens": 27624
+      },
+      "values": {
+        "calls": 10,
+        "seconds": 2.9614520008908585,
+        "context_tokens": 6163
+      },
+      "seconds": 16.28249820898054
+    },
+    {
+      "prompt": "Set a reminder for the task 'water plants' after 3 days and send a notification.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 13.139875582011882,
+        "context_tokens": 27768
+      },
+      "values": {
+        "calls": 10,
+        "seconds": 3.621310043032281,
+        "context_tokens": 6227
+      },
+      "seconds": 17.35826312500285
+    },
+    {
+      "prompt": "Set a reminder for the task 'read' after 0 days without sending a notification.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.741096163517796,
+        "context_tokens": 27720
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 2.5245375428930856,
+        "context_tokens": 5591
+      },
+      "seconds": 15.625794749998022
+    },
+    {
+      "prompt": "Clear the setting by setting its value to null.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.073654249194078,
+        "context_tokens": 27336
+      },
+      "values": {
+        "calls": 4,
+        "seconds": 1.340932374005206,
+        "context_tokens": 2423
+      },
+      "seconds": 13.653532750031445
+    },
+    {
+      "prompt": "Check whether the service is healthy.",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 12.372368170297705,
+        "context_tokens": 27192
+      },
+      "values": {
+        "calls": 2,
+        "seconds": 0.5855772090144455,
+        "context_tokens": 1196
+      },
+      "seconds": 13.246753750019707
+    }
+  ]
+}

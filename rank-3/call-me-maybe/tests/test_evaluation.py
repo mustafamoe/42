@@ -20,6 +20,11 @@ from src.schema import Call, Function, Parameter, number_as_float, validate_call
 class EvaluationTests(unittest.TestCase):
     """Verify allowed values, refusal, numeric precision and SDK storage."""
 
+    def setUp(self):
+        budget = patch.object(Decoder, "reasoning_budget", return_value=48)
+        budget.start()
+        self.addCleanup(budget.stop)
+
     def test_ranked_selection_matches_exhaustive_masking(self):
         vocabulary = dict(enumerate([
             b'"', b'hello', b'Hello', b'"}', b'"hello"}', b'"Hello"}',

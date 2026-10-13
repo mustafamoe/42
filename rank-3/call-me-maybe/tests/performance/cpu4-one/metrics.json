@@ -1,0 +1,46 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "cpu",
+  "threads": {
+    "OMP_NUM_THREADS": "4",
+    "MKL_NUM_THREADS": "4"
+  },
+  "suite": "public",
+  "reasoning_budget": 48,
+  "prompt_limit": 1,
+  "source_sha256": {
+    "decoder.py": "441b988d2b9c60b93245d8a0aac07094c71221fb870c5d540d71d5415aabd55b",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 3428171776,
+  "model_load_seconds": 10.694277125003282,
+  "batch_seconds": 91.39459433295997,
+  "total_seconds": 102.08887145796325,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the sum of 2 and 3?",
+      "reasoning": {
+        "calls": 48,
+        "seconds": 84.57721812516684,
+        "context_tokens": 27816
+      },
+      "values": {
+        "calls": 9,
+        "seconds": 6.352719958056696,
+        "context_tokens": 5557
+      },
+      "seconds": 91.36937612498878
+    }
+  ]
+}

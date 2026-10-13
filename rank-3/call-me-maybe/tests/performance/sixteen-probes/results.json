@@ -1,0 +1,270 @@
+{
+  "source_sha256": {
+    "decoder.py": "441b988d2b9c60b93245d8a0aac07094c71221fb870c5d540d71d5415aabd55b",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "model_load_seconds": 0.001,
+  "results": [
+    {
+      "prompt": "Which planet is closest to the Sun?",
+      "expected_name": null,
+      "expected_parameters": null,
+      "error": "No available function matches this prompt",
+      "passed": true,
+      "seconds": 7.02
+    },
+    {
+      "prompt": "",
+      "expected_name": null,
+      "expected_parameters": null,
+      "error": "No available function matches this prompt",
+      "passed": true,
+      "seconds": 6.168
+    },
+    {
+      "prompt": "Please help me with it.",
+      "expected_name": null,
+      "expected_parameters": null,
+      "error": "No available function matches this prompt",
+      "passed": true,
+      "seconds": 5.951
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "expected_name": "fn_format_template",
+      "expected_parameters": {
+        "template": "Say \"hello\" to {name}"
+      },
+      "actual": {
+        "prompt": "Format template: Say \"hello\" to {name}",
+        "name": "fn_format_template",
+        "parameters": {
+          "template": "Say \"hello\" to {name}\""
+        }
+      },
+      "passed": false,
+      "seconds": 10.98
+    },
+    {
+      "prompt": "Format template: Please say \"welcome\" to {visitor}",
+      "expected_name": "fn_format_template",
+      "expected_parameters": {
+        "template": "Please say \"welcome\" to {visitor}"
+      },
+      "actual": {
+        "prompt": "Format template: Please say \"welcome\" to {visitor}",
+        "name": "fn_format_template",
+        "parameters": {
+          "template": "Please say \"welcome\" to {visitor}"
+        }
+      },
+      "passed": true,
+      "seconds": 10.816
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN path C:\\temp END",
+      "expected_name": "save_message",
+      "expected_parameters": {
+        "text": "path C:\\temp"
+      },
+      "actual": {
+        "prompt": "Save this exact message between markers. BEGIN path C:\\temp END",
+        "name": "save_message",
+        "parameters": {
+          "text": "path C:\\temp"
+        }
+      },
+      "passed": true,
+      "seconds": 7.45
+    },
+    {
+      "prompt": "Save this exact message between markers. BEGIN first line\nsecond line END",
+      "expected_name": "save_message",
+      "expected_parameters": {
+        "text": "first line\nsecond line"
+      },
+      "actual": {
+        "prompt": "Save this exact message between markers. BEGIN first line\nsecond line END",
+        "name": "save_message",
+        "parameters": {
+          "text": "first line\nsecond line"
+        }
+      },
+      "passed": true,
+      "seconds": 7.952
+    },
+    {
+      "prompt": "Read /tmp/report.txt using latin-1 encoding.",
+      "expected_name": "open_document",
+      "expected_parameters": {
+        "path": "/tmp/report.txt",
+        "encoding": "latin-1"
+      },
+      "actual": {
+        "prompt": "Read /tmp/report.txt using latin-1 encoding.",
+        "name": "open_document",
+        "parameters": {
+          "path": "/tmp/report.txt",
+          "encoding": "latin-1"
+        }
+      },
+      "passed": true,
+      "seconds": 6.672
+    },
+    {
+      "prompt": "Set the task status to done.",
+      "expected_name": "change_status",
+      "expected_parameters": {
+        "status": "done"
+      },
+      "actual": {
+        "prompt": "Set the task status to done.",
+        "name": "change_status",
+        "parameters": {
+          "status": "done"
+        }
+      },
+      "passed": true,
+      "seconds": 4.903
+    },
+    {
+      "prompt": "Replace cat followed by one or more digits in 'cat12 dog cat cat7' with TOKEN.",
+      "expected_name": "fn_substitute_string_with_regex",
+      "expected_parameters": {
+        "source_string": "cat12 dog cat cat7",
+        "replacement": "TOKEN",
+        "result": "TOKEN dog cat TOKEN"
+      },
+      "actual": {
+        "prompt": "Replace cat followed by one or more digits in 'cat12 dog cat cat7' with TOKEN.",
+        "name": "fn_substitute_string_with_regex",
+        "parameters": {
+          "source_string": "cat12 dog cat cat7",
+          "regex": "cat",
+          "replacement": "TOKEN"
+        }
+      },
+      "passed": false,
+      "seconds": 11.944
+    },
+    {
+      "prompt": "Greet shrek",
+      "expected_name": "fn_greet",
+      "expected_parameters": {
+        "name": "shrek"
+      },
+      "actual": {
+        "prompt": "Greet shrek",
+        "name": "fn_greet",
+        "parameters": {
+          "name": "shrek"
+        }
+      },
+      "passed": true,
+      "seconds": 7.181
+    },
+    {
+      "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+      "expected_name": "fn_substitute_string_with_regex",
+      "expected_parameters": {
+        "source_string": "Hello 34 I'm 233 years old",
+        "replacement": "NUMBERS",
+        "result": "Hello NUMBERS I'm NUMBERS years old"
+      },
+      "actual": {
+        "prompt": "Replace all numbers in \"Hello 34 I'm 233 years old\" with NUMBERS",
+        "name": "fn_substitute_string_with_regex",
+        "parameters": {
+          "source_string": "Hello 34 I'm 233 years old",
+          "regex": "\\d+",
+          "replacement": "NUMBERS"
+        }
+      },
+      "passed": true,
+      "seconds": 14.213
+    },
+    {
+      "prompt": "Archive the text between START and STOP: START caf\u00e9 \"hello\" STOP",
+      "expected_name": "archive_note",
+      "expected_parameters": {
+        "body": "caf\u00e9 \"hello\""
+      },
+      "actual": {
+        "prompt": "Archive the text between START and STOP: START caf\u00e9 \"hello\" STOP",
+        "name": "archive_note",
+        "parameters": {
+          "body": "caf\u00e9 \"hello\""
+        }
+      },
+      "passed": true,
+      "seconds": 5.222
+    },
+    {
+      "prompt": "Archive only the text inside <note> and </note>: <note>first\nsecond</note>",
+      "expected_name": "archive_note",
+      "expected_parameters": {
+        "body": "first\nsecond"
+      },
+      "actual": {
+        "prompt": "Archive only the text inside <note> and </note>: <note>first\nsecond</note>",
+        "name": "archive_note",
+        "parameters": {
+          "body": "first\nsecond"
+        }
+      },
+      "passed": true,
+      "seconds": 5.204
+    },
+    {
+      "prompt": "Save the literal message \"BEGIN path END\".",
+      "expected_name": "save_message",
+      "expected_parameters": {
+        "text": "BEGIN path END"
+      },
+      "actual": {
+        "prompt": "Save the literal message \"BEGIN path END\".",
+        "name": "save_message",
+        "parameters": {
+          "text": "BEGIN path END"
+        }
+      },
+      "passed": true,
+      "seconds": 7.113
+    },
+    {
+      "prompt": "Archive the literal note \"START here STOP\".",
+      "expected_name": "archive_note",
+      "expected_parameters": {
+        "body": "START here STOP"
+      },
+      "actual": {
+        "prompt": "Archive the literal note \"START here STOP\".",
+        "name": "archive_note",
+        "parameters": {
+          "body": "START here STOP"
+        }
+      },
+      "passed": true,
+      "seconds": 4.192
+    },
+    {
+      "prompt": "Archive the text between << and >>: <<Use BEGIN and END literally>>",
+      "expected_name": "archive_note",
+      "expected_parameters": {
+        "body": "Use BEGIN and END literally"
+      },
+      "actual": {
+        "prompt": "Archive the text between << and >>: <<Use BEGIN and END literally>>",
+        "name": "archive_note",
+        "parameters": {
+          "body": "Use BEGIN and END literally"
+        }
+      },
+      "passed": true,
+      "seconds": 4.702
+    }
+  ]
+}

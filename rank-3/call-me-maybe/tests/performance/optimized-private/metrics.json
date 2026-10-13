@@ -1,0 +1,161 @@
+{
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.10.20",
+  "device": "mps:0",
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "suite": "private",
+  "reasoning_budget": null,
+  "prompt_limit": null,
+  "source_sha256": {
+    "decoder.py": "b23ab60b8e8771e7eb05eb38bf726222e3788942adeb03875b9e3b3f03c5a5dc",
+    "__init__.py": "09a7f81f140d15d8cfc7c5b77430d07a4929f06db30561c3037236d5baf6c1a1",
+    "grammar.py": "e7588d393611a14e808c172df31464506f9afe070cb7976e1e594dbdc653dfff",
+    "__main__.py": "569ceb0e2f7ff0e6d25c0a062588d7e0f3dd9886029b5d2fc6917ae335569c39",
+    "schema.py": "bc245aa58ba39a1c4c0952157360ad17eaad09d7c97441bd858c1325a1979da4"
+  },
+  "versions": {
+    "numpy": "2.2.6",
+    "pydantic": "2.13.5",
+    "torch": "2.14.0",
+    "transformers": "4.57.6"
+  },
+  "peak_process_rss_bytes": 1992982528,
+  "model_load_seconds": 5.918840791971888,
+  "batch_seconds": 112.82186387502588,
+  "total_seconds": 118.74070466699777,
+  "exit_status": 0,
+  "prompts": [
+    {
+      "prompt": "What is the product of 3 and 5?",
+      "values": {
+        "calls": 8,
+        "seconds": 2.7962382919504307,
+        "context_tokens": 5070
+      },
+      "seconds": 2.9340797499753535
+    },
+    {
+      "prompt": "What is the product of 12 and 4?",
+      "values": {
+        "calls": 9,
+        "seconds": 2.575056959001813,
+        "context_tokens": 5752
+      },
+      "seconds": 2.7160157919861376
+    },
+    {
+      "prompt": "Is 4 an even number?",
+      "values": {
+        "calls": 6,
+        "seconds": 1.680085834057536,
+        "context_tokens": 3699
+      },
+      "seconds": 1.7785968750249594
+    },
+    {
+      "prompt": "Is 7 an even number?",
+      "values": {
+        "calls": 6,
+        "seconds": 1.6640031660790555,
+        "context_tokens": 3699
+      },
+      "seconds": 1.759959125018213
+    },
+    {
+      "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years",
+      "values": {
+        "calls": 26,
+        "seconds": 8.431329582061153,
+        "context_tokens": 19132
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.712534919206519,
+        "context_tokens": 33288
+      },
+      "seconds": 23.68658095796127
+    },
+    {
+      "prompt": "Execute SQL query 'SELECT * FROM users' on the production database",
+      "values": {
+        "calls": 13,
+        "seconds": 3.8002697899355553,
+        "context_tokens": 8578
+      },
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.3685772910830565,
+        "context_tokens": 5260
+      },
+      "seconds": 6.400992083013989
+    },
+    {
+      "prompt": "Run the query 'INSERT INTO logs VALUES (1, 2, 3)' on the system database",
+      "values": {
+        "calls": 21,
+        "seconds": 6.86677387508098,
+        "context_tokens": 15086
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.71849258383736,
+        "context_tokens": 32904
+      },
+      "seconds": 22.062328750034794
+    },
+    {
+      "prompt": "Read the file at /home/user/data.json with utf-8 encoding",
+      "values": {
+        "calls": 16,
+        "seconds": 4.773019501124509,
+        "context_tokens": 10519
+      },
+      "seconds": 5.016645791998599
+    },
+    {
+      "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding",
+      "values": {
+        "calls": 19,
+        "seconds": 5.712340248108376,
+        "context_tokens": 12715
+      },
+      "reasoning": {
+        "calls": 8,
+        "seconds": 2.421723999083042,
+        "context_tokens": 5268
+      },
+      "seconds": 8.44936433294788
+    },
+    {
+      "prompt": "Format template: Hello {user}'s profile!",
+      "values": {
+        "calls": 13,
+        "seconds": 4.052559788920917,
+        "context_tokens": 9003
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.469522334227804,
+        "context_tokens": 32376
+      },
+      "seconds": 18.880042625009082
+    },
+    {
+      "prompt": "Format template: Say \"hello\" to {name}",
+      "values": {
+        "calls": 14,
+        "seconds": 4.365494625759311,
+        "context_tokens": 9742
+      },
+      "reasoning": {
+        "calls": 48,
+        "seconds": 14.389205910963938,
+        "context_tokens": 32424
+      },
+      "seconds": 19.127797207969707
+    }
+  ]
+}
