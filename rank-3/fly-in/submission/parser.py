@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NoReturn, Optional, Tuple
 
 from models import Connection, NetworkMap, Zone, ZoneType
 
@@ -38,16 +38,14 @@ class MapParser:
         connection_keys: set[Tuple[str, str]] = set()
         start: Optional[str] = None
         end: Optional[str] = None
-        first_data_seen = False
         connections_started = False
 
         for line_number, raw_line in enumerate(lines, start=1):
             text = raw_line.split("#", 1)[0].strip()
             if not text:
                 continue
-            if not first_data_seen:
+            if drone_count is None:
                 drone_count = self._parse_drone_count(text, line_number)
-                first_data_seen = True
                 continue
 
             zone_match = self._ZONE.fullmatch(text)
@@ -107,11 +105,9 @@ class MapParser:
         match = self._DRONES.fullmatch(text)
         if match is None:
             self._fail(line_number, "first declaration must be nb_drones")
-        assert match is not None
-        value = self._positive_integer(
+        return self._positive_integer(
             match.group(1), line_number, "nb_drones"
         )
-        return value
 
     def _parse_zone(
         self, match: re.Match[str], line_number: int
@@ -125,26 +121,23 @@ class MapParser:
         kind_text = metadata.get("zone", ZoneType.NORMAL.value)
         try:
             kind = ZoneType(kind_text)
-        except ValueError as error:
+        except ValueError:
             self._fail(line_number, f"invalid zone type '{kind_text}'")
-            raise error
 
         color = metadata.get("color", "none")
         if not color or any(character.isspace() for character in color):
             self._fail(line_number, "color must be a single word")
 
         max_drones = 1
-        if "max_drones" in metadata:
-            parsed_capacity = self._positive_integer(
+        if role == "hub" and "max_drones" in metadata:
+            max_drones = self._positive_integer(
                 metadata["max_drones"], line_number, "max_drones"
             )
-            if role == "hub":
-                max_drones = parsed_capacity
 
         return role, Zone(
             name=name,
-            x=int(x_text),
-            y=int(y_text),
+            x=self._integer(x_text, line_number, "x coordinate"),
+            y=self._integer(y_text, line_number, "y coordinate"),
             kind=kind,
             color=color,
             max_drones=max_drones,
@@ -211,10 +204,24 @@ class MapParser:
         self, text: str, line_number: int, field_name: str
     ) -> int:
         """Parse one strictly positive decimal integer."""
-        if not text.isdecimal() or int(text) <= 0:
+        if not text.isdecimal():
             self._fail(line_number, f"{field_name} must be a positive integer")
-        return int(text)
+        value = self._integer(text, line_number, field_name)
+        if value <= 0:
+            self._fail(line_number, f"{field_name} must be a positive integer")
+        return value
 
-    def _fail(self, line_number: int, cause: str) -> None:
+    def _integer(
+        self, text: str, line_number: int, field_name: str
+    ) -> int:
+        """Convert a validated integer without leaking conversion errors."""
+        try:
+            return int(text)
+        except ValueError:
+            self._fail(
+                line_number, f"{field_name} exceeds the supported integer size"
+            )
+
+    def _fail(self, line_number: int, cause: str) -> NoReturn:
         """Raise a consistently formatted line-specific parse error."""
         raise ParseError(f"parse error on line {line_number}: {cause}")

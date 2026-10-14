@@ -16,11 +16,17 @@ ScalarType: TypeAlias = Literal[
 def scalar_matches(value: Scalar, kind: ScalarType) -> bool:
     """Check exact scalar types and finite numbers without coercion."""
     types: dict[str, tuple[type, ...]] = {
-        "string": (str,), "number": (int, float), "integer": (int,),
-        "boolean": (bool,), "null": (type(None),),
+        "string": (str,),
+        "number": (int, float),
+        "integer": (int,),
+        "boolean": (bool,),
+        "null": (type(None),),
     }
-    return (type(value) in types[kind]
-            and (not isinstance(value, float) or math.isfinite(value)))
+    if type(value) not in types[kind]:
+        return False
+    if isinstance(value, float):
+        return math.isfinite(value)
+    return True
 
 
 def number_as_float(value: int) -> int | float:
@@ -29,7 +35,9 @@ def number_as_float(value: int) -> int | float:
         converted = float(value)
     except OverflowError:
         return value
-    return converted if int(converted) == value else value
+    if int(converted) == value:
+        return converted
+    return value
 
 
 class Parameter(BaseModel):
@@ -45,16 +53,19 @@ class Parameter(BaseModel):
     @model_validator(mode="after")
     def validate_enum(self) -> "Parameter":
         """Require every allowed value to satisfy the declared scalar type."""
-        if self.enum is not None and any(
-            not scalar_matches(value, self.type) for value in self.enum
-        ):
-            raise ValueError("Allowed values must match the parameter type")
+        if self.enum is not None:
+            for value in self.enum:
+                if not scalar_matches(value, self.type):
+                    raise ValueError(
+                        "Allowed values must match the parameter type"
+                    )
         return self
 
     def accepts(self, value: Scalar) -> bool:
         """Check the declared type and any predefined allowed values."""
-        return (scalar_matches(value, self.type)
-                and (self.enum is None or value in self.enum))
+        if not scalar_matches(value, self.type):
+            return False
+        return self.enum is None or value in self.enum
 
 
 class ReturnType(BaseModel):

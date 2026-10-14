@@ -1,0 +1,149 @@
+{
+  "python": "3.10.20",
+  "source_sha256": {
+    ".gitignore": "7dddf15fd8e65b021b2705fd66be41f0d9f5568f3dcbd324f6823ab88605eba2",
+    "Makefile": "936e4ee0545935c81a301b0678715b7d60e5cad83b6f330aabb68191aa8f0ad2",
+    "README.md": "ccd5bb86faa36217660fa93b63a59c05aa915dd5d3b80bcd8b6da15c7950dcf3",
+    "fly_in.py": "1a7edaac5c1f2b76e36de85027c5c5e0372b4cea2e5cb51856d861c2dd157003",
+    "models.py": "f31ad7e754fb3d4ebb9d159e15280f723a79a12f2ec47affa694a94d1081a270",
+    "parser.py": "7919c5ca6c4b5165e0b20fcc35a7867f361a52289a6bb5404c059a270b3c00cd",
+    "planner.py": "e10e853faccad1ac190de3570199c5bb23abac4835abfa6020b2a7e75aad574f",
+    "simulation.py": "3c1ff54bcda2c66d514e567533f9672cb91f094689c5c87c063873e5fddd764f"
+  },
+  "checks": {
+    "make install": {
+      "passed": true,
+      "seconds": 4.593
+    },
+    "make lint": {
+      "passed": true,
+      "seconds": 2.955
+    },
+    "mypy .": {
+      "passed": true,
+      "seconds": 0.424
+    },
+    "private evaluation tests": {
+      "passed": true,
+      "seconds": 0.614
+    },
+    "compileall": {
+      "passed": true,
+      "seconds": 0.036
+    },
+    "CLI easy/01_linear_path": {
+      "passed": true,
+      "seconds": 0.05
+    },
+    "CLI easy/02_simple_fork": {
+      "passed": true,
+      "seconds": 0.052
+    },
+    "CLI easy/03_basic_capacity": {
+      "passed": true,
+      "seconds": 0.05
+    },
+    "CLI medium/01_dead_end_trap": {
+      "passed": true,
+      "seconds": 0.049
+    },
+    "CLI medium/02_circular_loop": {
+      "passed": true,
+      "seconds": 0.049
+    },
+    "CLI medium/03_priority_puzzle": {
+      "passed": true,
+      "seconds": 0.034
+    },
+    "CLI hard/01_maze_nightmare": {
+      "passed": true,
+      "seconds": 0.042
+    },
+    "CLI hard/02_capacity_hell": {
+      "passed": true,
+      "seconds": 0.055
+    },
+    "CLI hard/03_ultimate_challenge": {
+      "passed": true,
+      "seconds": 0.063
+    },
+    "README example": {
+      "passed": true,
+      "seconds": 0.037
+    },
+    "make run": {
+      "passed": true,
+      "seconds": 0.041
+    },
+    "make debug": {
+      "passed": true,
+      "seconds": 0.056
+    },
+    "PTY destination colors": {
+      "passed": true
+    },
+    "PTY NO_COLOR": {
+      "passed": true
+    },
+    "make clean": {
+      "passed": true,
+      "seconds": 0.03
+    },
+    "submission inventory": {
+      "passed": true,
+      "files": [
+        ".gitignore",
+        "Makefile",
+        "README.md",
+        "fly_in.py",
+        "models.py",
+        "parser.py",
+        "planner.py",
+        "simulation.py"
+      ]
+    }
+  },
+  "maps": [
+    {
+      "map": "easy/01_linear_path",
+      "turns": 4
+    },
+    {
+      "map": "easy/02_simple_fork",
+      "turns": 4
+    },
+    {
+      "map": "easy/03_basic_capacity",
+      "turns": 4
+    },
+    {
+      "map": "medium/01_dead_end_trap",
+      "turns": 8
+    },
+    {
+      "map": "medium/02_circular_loop",
+      "turns": 10
+    },
+    {
+      "map": "medium/03_priority_puzzle",
+      "turns": 6
+    },
+    {
+      "map": "hard/01_maze_nightmare",
+      "turns": 13
+    },
+    {
+      "map": "hard/02_capacity_hell",
+      "turns": 16
+    },
+    {
+      "map": "hard/03_ultimate_challenge",
+      "turns": 26
+    }
+  ],
+  "map_averages": {
+    "easy": 4.0,
+    "medium": 8.0,
+    "hard": 18.333333333333332
+  }
+}

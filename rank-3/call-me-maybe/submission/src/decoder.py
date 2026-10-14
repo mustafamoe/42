@@ -23,8 +23,11 @@ COPY_LOGIT_BONUS = 3.5
 
 def vocabulary_bytes(path: Path) -> dict[int, bytes]:
     """Undo Qwen's byte display map, preserving split UTF-8 tokens."""
-    visible = (list(range(33, 127)) + list(range(161, 173))
-               + list(range(174, 256)))
+    visible = (
+        list(range(33, 127))
+        + list(range(161, 173))
+        + list(range(174, 256))
+    )
     byte_order = visible + [byte for byte in range(256) if byte not in visible]
     characters = visible + list(range(256, 256 + 256 - len(visible)))
     inverse = {chr(char): byte for char, byte in zip(characters, byte_order)}
@@ -89,9 +92,13 @@ class Decoder(BaseModel):
     ) -> int:
         """Mask invalid tokens, with a soft preference for literal copying."""
         logits = self.logits(ids)
-        syntax = grammar.model_copy(update={
-            "source": None, "boundaries": frozenset(),
-        }) if grammar.source is not None else grammar
+        syntax = grammar
+        if grammar.source is not None:
+            syntax = grammar.model_copy(update={
+                "source": None, "boundaries": frozenset(),
+            })
+
+        # Stable ranking gives the smaller token ID priority on tied scores.
         ranked = np.argsort(-logits, kind="stable")
         token_id = -1
         for candidate_id in ranked:
@@ -103,30 +110,65 @@ class Decoder(BaseModel):
                 break
         if token_id < 0:
             raise ValueError("No finite, schema-valid next token")
-        if grammar.source is not None:
-            if copy_pending:
-                insensitive = grammar.model_copy(update={
-                    "source": grammar.source.lower(),
-                })
-                candidate = (raw + self.vocabulary[token_id]).lower()
-                if not insensitive.copy_at_boundary(candidate):
-                    return token_id
-            best_score = float(logits[token_id])
-            for candidate_id in ranked:
-                score = float(logits[candidate_id])
-                if score + COPY_LOGIT_BONUS < best_score:
-                    break
-                piece = self.vocabulary.get(int(candidate_id))
-                if piece is None or syntax.status(raw + piece) < 0:
-                    continue
-                if grammar.copy_at_boundary(raw + piece):
-                    score += COPY_LOGIT_BONUS
-                if (score > best_score or (
-                    score == best_score and candidate_id < token_id
-                )):
-                    token_id = int(candidate_id)
-                    best_score = score
+        if grammar.source is None:
+            return token_id
+
+        # Only start favoring copies if the model itself starts a source word.
+        if copy_pending:
+            insensitive = grammar.model_copy(update={
+                "source": grammar.source.lower(),
+            })
+            candidate = (raw + self.vocabulary[token_id]).lower()
+            if not insensitive.copy_at_boundary(candidate):
+                return token_id
+
+        best_score = float(logits[token_id])
+        for candidate_id in ranked:
+            score = float(logits[candidate_id])
+            # Later candidates cannot win even with the full copy bonus.
+            if score + COPY_LOGIT_BONUS < best_score:
+                break
+            piece = self.vocabulary.get(int(candidate_id))
+            if piece is None or syntax.status(raw + piece) < 0:
+                continue
+            if grammar.copy_at_boundary(raw + piece):
+                score += COPY_LOGIT_BONUS
+            wins_tie = score == best_score and candidate_id < token_id
+            if score > best_score or wins_tie:
+                token_id = int(candidate_id)
+                best_score = score
         return token_id
+
+    def complete_choice(
+        self, ids: list[int], raw: bytes, grammar: ScalarGrammar,
+        tokens_left: int,
+    ) -> bytes | None:
+        """Append a forced suffix only after one allowed choice remains.
+
+        Return its complete JSON bytes, or None if selection must continue.
+        Split UTF-8 and both generation limits still require token decoding.
+        """
+        prefix = raw.lstrip()
+        matches = [
+            choice for choice in grammar.choices if choice.startswith(prefix)
+        ]
+        if len(matches) != 1:
+            return None
+
+        choice = matches[0]
+        suffix = choice[len(prefix):]
+        try:
+            completion = suffix.decode("utf-8")
+        except UnicodeDecodeError:
+            return None
+
+        tokens = self.encode(completion)
+        if len(tokens) > tokens_left:
+            return None
+        if len(ids) + len(tokens) > CONTEXT_LIMIT:
+            return None
+        ids.extend(tokens)
+        return choice
 
     def generate(
         self, ids: list[int], grammar: ScalarGrammar, prefix: str = "",
@@ -146,7 +188,7 @@ class Decoder(BaseModel):
         """
         raw = b""
         remaining = VALUE_TOKEN_LIMIT
-        unrestricted = grammar.model_copy(update={
+        syntax = grammar.model_copy(update={
             "source": None, "boundaries": frozenset(),
         })
         copy_pending = grammar.source is not None
@@ -156,44 +198,36 @@ class Decoder(BaseModel):
                 ids + prefix_ids, raw, grammar, copy_pending,
             )
             piece = self.vocabulary[first]
-            status = unrestricted.status(piece)
-            if status == 1 or unrestricted.complete(piece.strip()):
+            status = syntax.status(piece)
+            if status == 1 or syntax.complete(piece.strip()):
+                # Keep whole quoted tokens, including the empty string.
                 ids.extend(prefix_ids + [first])
                 raw = piece
                 remaining -= 1
                 if status == 1:
                     return cast(Scalar, json.loads(raw[:-1]))
             else:
+                # Partial strings need the context produced by a fixed quote.
                 ids.extend(self.encode(prefix + '"'))
                 raw = b'"'
         else:
             ids.extend(prefix_ids)
         for step in range(remaining):
-            matches = [choice for choice in grammar.choices
-                       if choice.startswith(raw.lstrip())]
-            if len(matches) == 1:
-                suffix = matches[0][len(raw.lstrip()):]
-                try:
-                    completion = suffix.decode("utf-8")
-                except UnicodeDecodeError:
-                    pass
-                else:
-                    tokens = self.encode(completion)
-                    if (len(tokens) <= remaining - step
-                            and len(ids) + len(tokens) <= CONTEXT_LIMIT):
-                        ids.extend(tokens)
-                        return cast(Scalar, json.loads(matches[0][:-1]))
+            choice = self.complete_choice(ids, raw, grammar, remaining - step)
+            if choice is not None:
+                return cast(Scalar, json.loads(choice[:-1]))
             token_id = self.select_token(
                 ids, raw, grammar, copy_pending,
             )
             ids.append(token_id)
             raw += self.vocabulary[token_id]
             if grammar.source is not None and grammar.status(raw) < 0:
-                grammar = unrestricted
+                # A stronger model choice may leave the literal source text.
+                grammar = syntax
                 copy_pending = False
             if copy_pending and (
-                unrestricted.status(raw) == 1
-                or unrestricted.complete(raw)
+                syntax.status(raw) == 1
+                or syntax.complete(raw)
                 or grammar.copied_prefix(raw[1:], True)
             ):
                 copy_pending = False
@@ -205,23 +239,27 @@ class Decoder(BaseModel):
 
     def context(self, prompt: str, functions: list[Function]) -> str:
         """Build Qwen's tool template with its complete non-thinking prefix."""
-        definitions = "\n".join(json.dumps({
-            "type": "function",
-            "function": {
-                "name": item.name,
-                "description": item.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        key: value.model_dump(exclude_defaults=True)
-                        for key, value in item.parameters.items()
+        definitions = []
+        for function in functions:
+            tool = {
+                "type": "function",
+                "function": {
+                    "name": function.name,
+                    "description": function.description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            name: parameter.model_dump(exclude_defaults=True)
+                            for name, parameter in function.parameters.items()
+                        },
+                        "required": list(function.parameters),
+                        "additionalProperties": False,
                     },
-                    "required": list(item.parameters),
-                    "additionalProperties": False,
                 },
-            },
-        }, ensure_ascii=True) for item in functions).replace("<", "\\u003c")
-        text = (
+            }
+            definitions.append(json.dumps(tool, ensure_ascii=True))
+        tools = "\n".join(definitions).replace("<", "\\u003c")
+        return (
             "<|im_start|>system\n"
             "Call exactly one tool, including the rejection tool when needed. "
             "Extract inputs; do not execute functions or compute results. "
@@ -232,7 +270,7 @@ class Decoder(BaseModel):
             "with the user query.\n\n"
             "You are provided with function signatures within "
             "<tools></tools> XML tags:\n"
-            f"<tools>\n{definitions}\n</tools>\n\n"
+            f"<tools>\n{tools}\n</tools>\n\n"
             "For each function call, return a json object with function "
             "name and arguments within <tool_call></tool_call> XML tags:\n"
             '<tool_call>\n{"name": <function-name>, '
@@ -241,7 +279,6 @@ class Decoder(BaseModel):
             f"<|im_start|>user\n{prompt}<|im_end|>\n"
             "<|im_start|>assistant\n<think>\n\n</think>\n\n"
         )
-        return text
 
     def argument_request(self, prompt: str) -> str:
         """Identify text boundaries while protecting quoted literals."""
@@ -293,21 +330,14 @@ class Decoder(BaseModel):
             content = content[1:]
         if closing[0].isalnum() and content.endswith(" "):
             content = content[:-1]
-        return (prompt[:introduction.start()].rstrip() + ":\n" + content
-                + prompt[end + len(closing):])
+        instruction = prompt[:introduction.start()].rstrip()
+        trailing_text = prompt[end + len(closing):]
+        return instruction + ":\n" + content + trailing_text
 
-    def call(self, prompt: str, functions: list[Function]) -> Call:
-        """Choose a function using the model and decode its arguments.
-
-        Args:
-            prompt: Original request, preserved unchanged in the result.
-            functions: Validated definitions with unique function names.
-
-        Returns:
-            A call containing every parameter of the selected function.
-        """
-        if not prompt.strip():
-            raise ValueError("No available function matches this prompt")
+    def choose_function(
+        self, prompt: str, functions: list[Function],
+    ) -> tuple[Function, list[int]]:
+        """Select a function or reject, retaining the model context."""
         rejection_name = "no_matching_function"
         while any(item.name == rejection_name for item in functions):
             rejection_name = "_" + rejection_name
@@ -335,28 +365,25 @@ class Decoder(BaseModel):
         if name == rejection_name:
             raise ValueError("No available function matches this prompt")
         function = next(item for item in functions if item.name == name)
-        request = (self.argument_request(prompt) if any(
-            item.type == "string" and item.enum is None
-            for item in function.parameters.values()
-        ) else prompt)
-        if request != prompt:
-            ids = self.encode(self.context(request, [function]))
-            ids.extend(self.encode(
-                '<tool_call>\n{"name":'
-                + json.dumps(function.name).replace("<", "\\u003c")
-                + ',"arguments":{'
-            ))
-        else:
-            ids.extend(self.encode('"arguments":{'))
+        return function, ids
+
+    def generate_parameters(
+        self, ids: list[int], prompt: str, function: Function,
+    ) -> dict[str, Scalar]:
+        """Decode each required argument using its declared scalar grammar."""
         parameters: dict[str, Scalar] = {}
         for index, (key, parameter) in enumerate(function.parameters.items()):
-            delimiter: Literal[",", "}"] = (
-                "," if index + 1 < len(function.parameters) else "}"
-            )
-            choices = (() if parameter.enum is None else tuple(
-                json.dumps(value, ensure_ascii=False).encode("utf-8")
-                + delimiter.encode() for value in parameter.enum
-            ))
+            delimiter: Literal[",", "}"] = ","
+            if index + 1 == len(function.parameters):
+                delimiter = "}"
+
+            choices: tuple[bytes, ...] = ()
+            if parameter.enum is not None:
+                choices = tuple(
+                    json.dumps(value, ensure_ascii=False).encode("utf-8")
+                    + delimiter.encode()
+                    for value in parameter.enum
+                )
             source: bytes | None = None
             boundaries: frozenset[int] = frozenset()
             if parameter.type == "string" and parameter.enum is None:
@@ -372,6 +399,42 @@ class Decoder(BaseModel):
             if parameter.type == "number" and type(value) is int:
                 value = number_as_float(value)
             parameters[key] = value
+        return parameters
+
+    def call(self, prompt: str, functions: list[Function]) -> Call:
+        """Choose a function using the model and decode its arguments.
+
+        Args:
+            prompt: Original request, preserved unchanged in the result.
+            functions: Validated definitions with unique function names.
+
+        Returns:
+            A call containing every parameter of the selected function.
+        """
+        if not prompt.strip():
+            raise ValueError("No available function matches this prompt")
+
+        function, ids = self.choose_function(prompt, functions)
+        request = prompt
+        needs_literal_text = any(
+            parameter.type == "string" and parameter.enum is None
+            for parameter in function.parameters.values()
+        )
+        if needs_literal_text:
+            request = self.argument_request(prompt)
+
+        if request != prompt:
+            # Marker-delimited content gets a fresh argument context.
+            ids = self.encode(self.context(request, [function]))
+            ids.extend(self.encode(
+                '<tool_call>\n{"name":'
+                + json.dumps(function.name).replace("<", "\\u003c")
+                + ',"arguments":{'
+            ))
+        else:
+            ids.extend(self.encode('"arguments":{'))
+
+        parameters = self.generate_parameters(ids, prompt, function)
         result = Call(prompt=prompt, name=function.name, parameters=parameters)
         validate_call(result, function)
         return result

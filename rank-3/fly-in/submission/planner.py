@@ -2,6 +2,7 @@
 
 import heapq
 from collections import defaultdict
+from dataclasses import dataclass, field
 from itertools import count
 from typing import DefaultDict, Dict, List, Tuple
 
@@ -17,6 +18,18 @@ State = Tuple[str, int]
 EdgeSlot = Tuple[Tuple[str, str], int]
 ZoneSlot = Tuple[str, int]
 Previous = Tuple[State, RouteAction]
+# Heap order: estimated arrival, current turn, priority penalty, order, zone.
+SearchEntry = Tuple[int, int, int, int, str]
+
+
+@dataclass
+class _RouteSearch:
+    """Keep A* bookkeeping local to one drone's route search."""
+
+    queue: List[SearchEntry] = field(default_factory=list)
+    tie_breaker: count = field(default_factory=count)
+    best_preference: Dict[State, int] = field(default_factory=dict)
+    previous: Dict[State, Previous] = field(default_factory=dict)
 
 
 class PlanningError(Exception):
@@ -52,46 +65,30 @@ class RoutePlanner:
         """Find the earliest route available to one drone."""
         start_state = (self._network.start, 0)
         shortest_time = self._heuristic[self._network.start]
+        # Once earlier drones arrive, waiting at start leaves a clear route.
         time_limit = self._latest_arrival + shortest_time
-        serial = count()
-        queue: List[Tuple[int, int, int, int, str]] = []
+        search = _RouteSearch(best_preference={start_state: 0})
         heapq.heappush(
-            queue,
-            (shortest_time, 0, 0, next(serial), self._network.start),
+            search.queue,
+            (shortest_time, 0, 0, next(search.tie_breaker),
+             self._network.start),
         )
-        best_preference: Dict[State, int] = {start_state: 0}
-        previous: Dict[State, Previous] = {}
 
-        while queue:
-            _, time, preference, _, zone_name = heapq.heappop(queue)
-            state = (zone_name, time)
-            if best_preference.get(state) != preference:
+        while search.queue:
+            _, turn, preference, _, zone_name = heapq.heappop(search.queue)
+            state = (zone_name, turn)
+            if search.best_preference.get(state) != preference:
                 continue
             if zone_name == self._network.end:
-                actions = self._reconstruct(state, previous)
-                return DroneRoute(drone_id, actions, time)
-            if time >= time_limit:
+                actions = self._reconstruct(state, search.previous)
+                return DroneRoute(drone_id, actions, turn)
+            if turn >= time_limit:
                 continue
 
-            self._consider_wait(
-                state,
-                preference,
-                time_limit,
-                queue,
-                serial,
-                best_preference,
-                previous,
-            )
+            self._consider_wait(state, preference, time_limit, search)
             for connection in self._ordered_connections(zone_name):
                 self._consider_move(
-                    state,
-                    preference,
-                    connection,
-                    time_limit,
-                    queue,
-                    serial,
-                    best_preference,
-                    previous,
+                    state, preference, connection, time_limit, search,
                 )
 
         raise PlanningError(f"unable to plan drone {drone_id}")
@@ -101,31 +98,19 @@ class RoutePlanner:
         state: State,
         preference: int,
         time_limit: int,
-        queue: List[Tuple[int, int, int, int, str]],
-        serial: count,
-        best: Dict[State, int],
-        previous: Dict[State, Previous],
+        search: _RouteSearch,
     ) -> None:
         """Add a one-turn wait when the zone retains capacity."""
-        zone_name, time = state
-        next_time = time + 1
-        if next_time > time_limit:
+        zone_name, turn = state
+        next_turn = turn + 1
+        if next_turn > time_limit:
             return
-        occupied = self._zone_usage[(zone_name, next_time)]
+        occupied = self._zone_usage[(zone_name, next_turn)]
         if not self._network.has_capacity(zone_name, occupied):
             return
-        next_state = (zone_name, next_time)
-        action = RouteAction(time, next_time, zone_name, zone_name, None)
-        self._offer(
-            next_state,
-            preference,
-            action,
-            state,
-            queue,
-            serial,
-            best,
-            previous,
-        )
+        next_state = (zone_name, next_turn)
+        action = RouteAction(turn, next_turn, zone_name, zone_name, None)
+        self._offer(next_state, preference, action, state, search)
 
     def _consider_move(
         self,
@@ -133,23 +118,21 @@ class RoutePlanner:
         preference: int,
         connection: Connection,
         time_limit: int,
-        queue: List[Tuple[int, int, int, int, str]],
-        serial: count,
-        best: Dict[State, int],
-        previous: Dict[State, Previous],
+        search: _RouteSearch,
     ) -> None:
         """Add a traversal when its edge and destination have capacity."""
-        zone_name, time = state
+        zone_name, turn = state
         destination = connection.other(zone_name)
         zone = self._network.zones[destination]
         if zone.kind is ZoneType.BLOCKED or destination not in self._heuristic:
             return
-        arrival_time = time + zone.travel_time
+        arrival_time = turn + zone.travel_time
         if arrival_time > time_limit:
             return
-        edge_slot = (connection.key, time + 1)
+        edge_slot = (connection.key, turn + 1)
         if self._edge_usage[edge_slot] >= connection.capacity:
             return
+        # Check arrival capacity before accepting a restricted traversal.
         occupied = self._zone_usage[(destination, arrival_time)]
         if not self._network.has_capacity(destination, occupied):
             return
@@ -157,21 +140,14 @@ class RoutePlanner:
         next_state = (destination, arrival_time)
         next_preference = preference + zone.preference_penalty
         action = RouteAction(
-            time,
+            turn,
             arrival_time,
             zone_name,
             destination,
             connection,
         )
         self._offer(
-            next_state,
-            next_preference,
-            action,
-            state,
-            queue,
-            serial,
-            best,
-            previous,
+            next_state, next_preference, action, state, search,
         )
 
     def _offer(
@@ -180,22 +156,19 @@ class RoutePlanner:
         preference: int,
         action: RouteAction,
         origin: State,
-        queue: List[Tuple[int, int, int, int, str]],
-        serial: count,
-        best: Dict[State, int],
-        previous: Dict[State, Previous],
+        search: _RouteSearch,
     ) -> None:
         """Record a better path to a time-expanded state."""
-        known = best.get(state)
+        known = search.best_preference.get(state)
         if known is not None and known <= preference:
             return
-        zone_name, time = state
-        best[state] = preference
-        previous[state] = (origin, action)
-        estimate = time + self._heuristic[zone_name]
+        zone_name, turn = state
+        search.best_preference[state] = preference
+        search.previous[state] = (origin, action)
+        estimate = turn + self._heuristic[zone_name]
         heapq.heappush(
-            queue,
-            (estimate, time, preference, next(serial), zone_name),
+            search.queue,
+            (estimate, turn, preference, next(search.tie_breaker), zone_name),
         )
 
     def _ordered_connections(self, zone_name: str) -> List[Connection]:
@@ -222,6 +195,7 @@ class RoutePlanner:
 
     def _reserve(self, route: DroneRoute) -> None:
         """Reserve all finite-capacity time slots used by a route."""
+        # End-of-turn occupancy allows another drone to enter after departure.
         for action in route.actions:
             if action.connection is not None:
                 edge_slot = (action.connection.key, action.start_time + 1)
@@ -244,6 +218,7 @@ class RoutePlanner:
             distance, zone_name = heapq.heappop(queue)
             if distances.get(zone_name) != distance:
                 continue
+            # Reverse search charges entry into the zone we came back from.
             entry_cost = self._network.zones[zone_name].travel_time
             for connection in self._network.adjacency[zone_name]:
                 neighbor = connection.other(zone_name)

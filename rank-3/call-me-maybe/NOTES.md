@@ -1,8 +1,8 @@
 # Call me maybe
 
 The checklist and design describe the current implementation. Dated validation
-sections preserve historical results; the latest non-thinking results are at
-the end of this file.
+sections preserve historical results; the latest validation is at the end of
+this file.
 
 ## Source inventory and scope
 
@@ -1162,3 +1162,46 @@ encoded together. Existing masking, schema, marker, refusal, I/O and storage
 checks remain. The standalone fresh export also successfully installed and ran
 using its own supplied SDK. Real-model scores and intentional failures are
 reported above separately from deterministic unit checks.
+
+## Readability refactor (2026-10-14)
+
+The existing module boundaries remain useful: `schema.py` validates input and
+output, `grammar.py` recognizes scalar JSON bytes, `decoder.py` drives the model,
+and `__main__.py` handles files and the CLI. The decoder's long methods and
+compressed conditions were the main readability problems.
+
+Read the decoder starting at `Decoder.call()`:
+
+1. `choose_function()` lets the model choose a supplied function or reject the
+   request, returning the selected definition and its token context.
+2. `argument_request()` handles explicit text markers when a free string
+   argument needs them. Ordinary requests keep their existing context.
+3. `generate_parameters()` walks the selected function's arguments in order,
+   builds each scalar grammar, and generates its value.
+4. `validate_call()` checks the completed result against the definition.
+
+Within scalar generation, `complete_choice()` handles a suffix that becomes
+fixed after the model disambiguates a name or enum value. It retains the UTF-8,
+value-token and context limits. Token ranking uses early returns and a named
+tie condition; comments explain copying and the opening-quote context rule.
+Tool schema construction and scalar type validation now use explicit blocks
+instead of dense compound expressions. No new files or dependencies are needed.
+
+Validation on Python 3.10.20:
+
+- All 60 existing offline tests pass, as do `make lint` and the CLI help check.
+- A temporary comparison recorded public SDK tokenization and inference from
+  the refactored code, then replayed the same logits through a saved copy of
+  all original source modules. All 25 requests matched exactly: 11 supplied
+  prompts, 10 changed-function prompts, three marker/literal cases and one
+  unrelated request rejected by the model. Outputs, error messages, encoded
+  text, inference contexts and SDK call counts were identical.
+- Independent accuracy checks score the supplied prompts at 11/11 and changed
+  prompts at 9/10, with every call schema-compliant. The existing nested-quote
+  extraction failure is unchanged.
+- The supplied SDK, demonstration inputs, Makefile, model template and
+  generation policies are unchanged. Existing semantic limitations remain.
+
+Historical performance artifacts retain their original source hashes. This
+refactor verifies equivalent model interactions; it does not replace the
+outstanding first-run timing check on the school's Linux computer.

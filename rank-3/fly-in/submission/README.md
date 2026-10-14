@@ -42,7 +42,7 @@ with a non-zero status. Valid simulations print one line per turn. A drone
 that waits is omitted from that turn, and a delivered drone is not printed
 again.
 
-## Algorithm and Strategy
+## Algorithm Explanation
 
 1. `MapParser` validates each declaration and creates `Zone`, `Connection`,
    and `NetworkMap` objects. The network stores connections in adjacency
@@ -64,6 +64,11 @@ again.
 5. `Simulation` converts the completed plans into chronological movement
    lines. Because occupancy is reserved at the end of each turn, a drone may
    enter a zone during the same turn that another drone leaves it.
+
+This plans each drone's earliest available arrival while keeping earlier routes
+fixed. It meets the supplied map targets but does not guarantee the globally
+fewest turns on every possible graph. Priority zones break equal-time ties;
+they do not force a longer route when a faster route is available.
 
 For `D` drones, `V` zones, `E` connections, and a latest searched turn `T`,
 the worst-case planning time is

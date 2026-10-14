@@ -50,9 +50,9 @@ class ScalarGrammar(BaseModel):
             return True
         start = self.source.find(body)
         while start >= 0:
-            if (start in self.boundaries and (
-                not complete or start + len(body) in self.boundaries
-            )):
+            starts_at_boundary = start in self.boundaries
+            ends_at_boundary = start + len(body) in self.boundaries
+            if starts_at_boundary and (not complete or ends_at_boundary):
                 return True
             start = self.source.find(body, start + 1)
         return False
@@ -60,7 +60,9 @@ class ScalarGrammar(BaseModel):
     def copy_at_boundary(self, raw: bytes) -> bool:
         """Identify a literal copy ending at a complete source character."""
         state = self.status(raw)
-        return state >= 0 and (
+        if state < 0:
+            return False
+        return (
             state == 1
             or self.complete(raw.strip(b" \t\r\n"))
             or self.copied_prefix(raw.lstrip(b" \t\r\n")[1:], True)
@@ -75,8 +77,11 @@ class ScalarGrammar(BaseModel):
             valid = any(item.startswith(raw) for item in self.choices)
             return 0 if valid else -1
         if self.kind in ("boolean", "null"):
-            values = ((b"true", b"false") if self.kind == "boolean"
-                      else (b"null",))
+            values: tuple[bytes, ...]
+            if self.kind == "boolean":
+                values = (b"true", b"false")
+            else:
+                values = (b"null",)
             options = [value + self.delimiter.encode() for value in values]
             if raw in options:
                 return 1
@@ -101,11 +106,14 @@ class ScalarGrammar(BaseModel):
     def complete(self, raw: bytes) -> bool:
         """Check that a scalar is fully formed and finite before closure."""
         if self.kind == "string":
-            return (bool(STRING_COMPLETE.fullmatch(raw))
-                    and valid_utf8_prefix(raw)
-                    and self.copied_prefix(raw[1:-1], True))
-        pattern = (INTEGER_COMPLETE if self.kind == "integer"
-                   else NUMBER_COMPLETE)
+            if not STRING_COMPLETE.fullmatch(raw):
+                return False
+            if not valid_utf8_prefix(raw):
+                return False
+            return self.copied_prefix(raw[1:-1], True)
+        pattern = NUMBER_COMPLETE
+        if self.kind == "integer":
+            pattern = INTEGER_COMPLETE
         if not pattern.fullmatch(raw):
             return False
         value = json.loads(raw)

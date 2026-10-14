@@ -1,12 +1,16 @@
 """Private compliance tests for the Fly-in submission."""
 
+import gc
 import io
+import subprocess
 import sys
 import tempfile
 import unittest
+import weakref
 from collections import defaultdict
 from pathlib import Path
 from typing import DefaultDict, Tuple
+from unittest.mock import patch
 
 SUBMISSION = Path(__file__).resolve().parents[1] / "submission"
 MAPS = Path(__file__).resolve().parents[1] / "resources" / "maps"
@@ -49,7 +53,9 @@ class FlyInTestCase(unittest.TestCase):
                     self.assertIsNotNone(action.connection)
                     connection = action.connection
                     assert connection is not None
-                    self.assertEqual(connection.other(current), action.destination)
+                    self.assertEqual(
+                        connection.other(current), action.destination
+                    )
                     destination = network.zones[action.destination]
                     self.assertIsNot(destination.kind, ZoneType.BLOCKED)
                     self.assertEqual(
@@ -202,6 +208,278 @@ connection: wall-goal
         )
         with self.assertRaisesRegex(PlanningError, "no accessible route"):
             RoutePlanner(network).plan()
+
+    def test_all_parser_error_categories_from_evaluation(self) -> None:
+        """Reject malformed syntax, missing hubs, types, and capacities."""
+        valid = (
+            "nb_drones: 1\nstart_hub: start 0 0\n"
+            "hub: middle 1 0\nend_hub: goal 2 0\n"
+            "connection: start-middle\nconnection: middle-goal\n"
+        )
+        cases = [
+            ("", "missing nb_drones"),
+            (valid.replace("nb_drones: 1\n", ""), "first declaration"),
+            (valid.replace("start_hub: start 0 0\n", ""), "unknown zone"),
+            (valid.replace("start_hub:", "hub:"), "exactly one start_hub"),
+            (valid.replace("end_hub:", "hub:"), "exactly one end_hub"),
+            (valid.replace("hub: middle 1 0", "hub: middle 1 0 [zone=bad]"),
+             "invalid zone type"),
+            (valid.replace("hub: middle 1 0", "hub: middle x 0"),
+             "malformed declaration"),
+            (valid.replace("hub: middle 1 0", "hub: middle 1 0 [color=]"),
+             "invalid metadata"),
+            (valid.replace("hub: middle 1 0", "hub: middle 1 0 [color=red"),
+             "malformed declaration"),
+            (valid.replace(
+                "hub: middle 1 0",
+                "hub: middle 1 0 [zone=normal zone=priority]",
+            ),
+             "duplicate metadata key"),
+            (valid.replace("hub: middle 1 0", "hub: middle 1 0 [unknown=1]"),
+             "unknown metadata key"),
+            (valid.replace(
+                "hub: middle 1 0", "hub: middle 1 0\nhub: middle 2 0"
+            ),
+             "duplicate zone"),
+            (valid + "connection: goal-middle\n", "duplicate connection"),
+            (valid.replace("start-middle", "start-absent"), "unknown zone"),
+            (valid.replace("start-middle", "start-start"),
+             "join a zone to itself"),
+        ]
+        for capacity in ("0", "-2", "1.5", "abc"):
+            cases.append((valid.replace(
+                "hub: middle 1 0", f"hub: middle 1 0 [max_drones={capacity}]"
+            ), "max_drones must be a positive integer"))
+            cases.append((valid.replace(
+                "connection: start-middle",
+                f"connection: start-middle [max_link_capacity={capacity}]"
+            ), "max_link_capacity must be a positive integer"))
+        for text, message in cases:
+            with self.subTest(message=message, text=text):
+                with self.assertRaisesRegex(ParseError, message):
+                    self.parse_text(text)
+
+    def test_start_and_end_capacity_metadata_is_ignored(self) -> None:
+        """Ignore hub capacity values at the two unlimited endpoints."""
+        network = self.parse_text(
+            "nb_drones: 4\n"
+            "start_hub: start 0 0 [max_drones=0]\n"
+            "end_hub: goal 1 0 [max_drones=-2]\n"
+            "connection: start-goal [max_link_capacity=4]\n"
+        )
+        routes = RoutePlanner(network).plan()
+        self.assert_valid_routes(network, routes)
+        self.assertTrue(all(route.arrival_time == 1 for route in routes))
+
+    def test_priority_zone_wins_an_equal_time_route(self) -> None:
+        """Choose the priority branch even when it is declared later."""
+        network = self.parse_text(
+            "nb_drones: 1\nstart_hub: start 0 0\n"
+            "hub: ordinary 1 0\nhub: preferred 1 1 [zone=priority]\n"
+            "end_hub: goal 2 0\nconnection: start-ordinary\n"
+            "connection: ordinary-goal\nconnection: start-preferred\n"
+            "connection: preferred-goal\n"
+        )
+        routes = RoutePlanner(network).plan()
+        self.assert_valid_routes(network, routes)
+        self.assertEqual(routes[0].arrival_time, 2)
+        self.assertEqual(routes[0].actions[0].destination, "preferred")
+
+    def test_zone_capacity_limits_a_wider_connection(self) -> None:
+        """Allow two drones, rather than three, in a two-slot middle zone."""
+        network = self.parse_text(
+            "nb_drones: 4\nstart_hub: start 0 0\n"
+            "hub: middle 1 0 [max_drones=2]\nend_hub: goal 2 0\n"
+            "connection: start-middle [max_link_capacity=3]\n"
+            "connection: middle-goal [max_link_capacity=3]\n"
+        )
+        routes = RoutePlanner(network).plan()
+        self.assert_valid_routes(network, routes)
+        self.assertEqual(
+            [route.arrival_time for route in routes], [2, 2, 3, 3]
+        )
+
+    def test_large_connection_capacity_allows_parallel_arrivals(self) -> None:
+        """Support high capacities and more than ten drones without limits."""
+        network = self.parse_text(
+            "nb_drones: 20\nstart_hub: start 0 0\nend_hub: goal 1 0\n"
+            f"connection: start-goal [max_link_capacity={10 ** 100}]\n"
+        )
+        routes = RoutePlanner(network).plan()
+        self.assert_valid_routes(network, routes)
+        self.assertEqual(len(routes), 20)
+        self.assertTrue(all(route.arrival_time == 1 for route in routes))
+
+    def test_large_graph_routes_many_drones_safely(self) -> None:
+        """Audit fifty drones across a 120-zone graph with weighted zones."""
+        width, height = 12, 10
+        lines = ["nb_drones: 50"]
+        for y in range(height):
+            for x in range(width):
+                role = "hub"
+                kind = "normal"
+                if (x, y) == (0, 0):
+                    role = "start_hub"
+                elif (x, y) == (width - 1, height - 1):
+                    role = "end_hub"
+                elif (x + y) % 7 == 0:
+                    kind = "restricted"
+                elif (x + y) % 3 == 0:
+                    kind = "priority"
+                lines.append(
+                    f"{role}: z{x}_{y} {x} {y} "
+                    f"[zone={kind} max_drones=2]"
+                )
+        for y in range(height):
+            for x in range(width):
+                for next_x, next_y in ((x + 1, y), (x, y + 1)):
+                    if next_x < width and next_y < height:
+                        lines.append(
+                            f"connection: z{x}_{y}-z{next_x}_{next_y} "
+                            "[max_link_capacity=2]"
+                        )
+        network = self.parse_text("\n".join(lines))
+        routes = RoutePlanner(network).plan()
+        self.assertEqual(len(network.zones), 120)
+        self.assertEqual(len(routes), 50)
+        self.assert_valid_routes(network, routes)
+
+    def test_restricted_arrivals_cannot_wait_on_connections(self) -> None:
+        """Guarantee next-turn arrival at a contested restricted zone."""
+        network = self.parse_text(
+            "nb_drones: 3\nstart_hub: start 0 0\n"
+            "hub: tunnel 1 0 [zone=restricted]\nend_hub: goal 2 0\n"
+            "connection: start-tunnel [max_link_capacity=3]\n"
+            "connection: tunnel-goal [max_link_capacity=3]\n"
+        )
+        routes = RoutePlanner(network).plan()
+        self.assert_valid_routes(network, routes)
+        output = io.StringIO()
+        Simulation(network, routes, TerminalView(output)).run()
+        self.assertEqual(output.getvalue().splitlines(), [
+            "D1-start-tunnel", "D1-tunnel D2-start-tunnel",
+            "D1-goal D2-tunnel D3-start-tunnel", "D2-goal D3-tunnel",
+            "D3-goal",
+        ])
+
+    def test_stationary_and_delivered_drones_are_omitted(self) -> None:
+        """Print movement only, and stop immediately after final delivery."""
+        network = self.parse_text(
+            "nb_drones: 3\nstart_hub: start 0 0\n"
+            "hub: middle 1 0\nend_hub: goal 2 0\n"
+            "connection: start-middle\nconnection: middle-goal\n"
+        )
+        output = io.StringIO()
+        Simulation(
+            network, RoutePlanner(network).plan(), TerminalView(output)
+        ).run()
+        self.assertEqual(output.getvalue().splitlines(), [
+            "D1-middle", "D1-goal D2-middle", "D2-goal D3-middle", "D3-goal",
+        ])
+
+    def test_colors_follow_destination_metadata_on_a_terminal(self) -> None:
+        """Color movement tokens on terminals and honor NO_COLOR."""
+        network = self.parse_text(
+            "nb_drones: 1\nstart_hub: start 0 0\n"
+            "hub: tunnel 1 0 [zone=restricted color=red]\n"
+            "end_hub: goal 2 0 [color=blue]\n"
+            "connection: start-tunnel\nconnection: tunnel-goal\n"
+        )
+        routes = RoutePlanner(network).plan()
+        for no_color in (False, True):
+            with self.subTest(no_color=no_color):
+                output = io.StringIO()
+                environment = {"NO_COLOR": "1"} if no_color else {}
+                with (
+                    patch.dict("os.environ", environment, clear=True),
+                    patch.object(output, "isatty", return_value=True),
+                ):
+                    Simulation(network, routes, TerminalView(output)).run()
+                if no_color:
+                    self.assertNotIn("\033[", output.getvalue())
+                else:
+                    self.assertEqual(output.getvalue().splitlines(), [
+                        "\033[31mD1-start-tunnel\033[0m",
+                        "\033[31mD1-tunnel\033[0m",
+                        "\033[34mD1-goal\033[0m",
+                    ])
+
+    def test_cli_errors_are_clear_and_do_not_crash(self) -> None:
+        """Report usage, missing files, disconnections, and numeric limits."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "map.txt"
+            cases = [
+                ([], None),
+                ([str(path)], None),
+                ([str(path)], "nb_drones: 1\nstart_hub: start 0 0\n"
+                 "end_hub: goal 1 0\n"),
+                ([str(path)],
+                 "nb_drones: 1\nstart_hub: start 0 0 [zone=bad]\n"),
+            ]
+            for arguments, content in cases:
+                if content is not None:
+                    path.write_text(content, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(SUBMISSION / "fly_in.py"),
+                     *arguments],
+                    text=True, capture_output=True, timeout=5,
+                )
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout, "")
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertTrue(result.stderr.startswith(("Usage:", "Error:")))
+
+            for field in ("coordinate", "capacity", "drone_count"):
+                with self.subTest(field=field):
+                    digits = "9" * 5000
+                    content = (
+                        "nb_drones: 1\nstart_hub: start 0 0\n"
+                        "end_hub: goal 1 0\nconnection: start-goal\n"
+                    )
+                    if field == "coordinate":
+                        content = content.replace(
+                            "start 0 0", f"start {digits} 0"
+                        )
+                    elif field == "capacity":
+                        content = content.replace(
+                            "start-goal",
+                            f"start-goal [max_link_capacity={digits}]",
+                        )
+                    else:
+                        content = content.replace(
+                            "nb_drones: 1", f"nb_drones: {digits}"
+                        )
+                    path.write_text(content, encoding="utf-8")
+                    result = subprocess.run(
+                        [sys.executable, str(SUBMISSION / "fly_in.py"),
+                         str(path)],
+                        text=True, capture_output=True, timeout=5,
+                    )
+                    self.assertEqual(result.returncode, 1)
+                    self.assertNotIn("Traceback", result.stderr)
+                    self.assertIn("parse error on line", result.stderr)
+
+    def test_repeated_simulations_release_their_objects(self) -> None:
+        """Keep no network, planner, route, or simulation alive after a run."""
+        references = []
+        for _ in range(20):
+            network = self.parse_text(
+                "nb_drones: 2\nstart_hub: start 0 0\nend_hub: goal 1 0\n"
+                "connection: start-goal\n"
+            )
+            planner = RoutePlanner(network)
+            routes = planner.plan()
+            simulation = Simulation(
+                network, routes, TerminalView(io.StringIO())
+            )
+            simulation.run()
+            references.extend(
+                weakref.ref(item)
+                for item in (network, planner, simulation, *routes)
+            )
+            del simulation, routes, planner, network
+        gc.collect()
+        self.assertTrue(all(reference() is None for reference in references))
 
 
 if __name__ == "__main__":
