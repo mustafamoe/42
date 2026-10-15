@@ -1,0 +1,1210 @@
+[
+  {
+    "id": "Intro",
+    "title": "Deliver the whole fleet",
+    "sentences": [
+      "Fly-in simulates drones moving from one start zone to one goal through a connected network.",
+      "The objective is to finish the entire fleet in as few turns as possible.",
+      "A valid schedule must respect movement costs, zone space, and connection capacity."
+    ],
+    "tag": "01 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Fly-in simulates drones moving from one start zone to one goal through a connected network.",
+        "startMs": 120,
+        "endMs": 4805,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The objective is to finish the entire fleet in as few turns as possible.",
+        "startMs": 4965,
+        "endMs": 8632,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A valid schedule must respect movement costs, zone space, and connection capacity.",
+        "startMs": 8792,
+        "endMs": 14115,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 429,
+    "audio": "Intro-1b0c8f8b48.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Network",
+    "title": "The network is a graph",
+    "sentences": [
+      "Each location is a zone, also called a graph node. Each connection is a two-way edge.",
+      "Drones can move only between connected neighbors, and they can wait when a resource is busy.",
+      "Coordinates describe locations; the destination's type determines travel time, rather than physical distance."
+    ],
+    "tag": "02 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Each location is a zone, also called a graph node. Each connection is a two-way edge.",
+        "startMs": 120,
+        "endMs": 5152,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Drones can move only between connected neighbors, and they can wait when a resource is busy.",
+        "startMs": 5312,
+        "endMs": 10018,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Coordinates describe locations; the destination's type determines travel time, rather than physical distance.",
+        "startMs": 10178,
+        "endMs": 16850,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 511,
+    "audio": "Network-b4a45b889a.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Input",
+    "title": "Read the map format",
+    "sentences": [
+      "The first data declaration gives a positive drone count. Exactly one start and one end are required.",
+      "Every zone has a unique name and integer coordinates. Declare all zones before connections, whose endpoints must exist.",
+      "Bracket metadata sets zone type, color, zone capacity, or link capacity. Comments begin with a hash.",
+      "Defaults are normal zones, no color, and capacities of one. Metadata order does not matter."
+    ],
+    "tag": "03 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "The first data declaration gives a positive drone count. Exactly one start and one end are required.",
+        "startMs": 120,
+        "endMs": 5974,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Every zone has a unique name and integer coordinates. Declare all zones before connections, whose endpoints must exist.",
+        "startMs": 6134,
+        "endMs": 13105,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Bracket metadata sets zone type, color, zone capacity, or link capacity. Comments begin with a hash.",
+        "startMs": 13265,
+        "endMs": 20089,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Defaults are normal zones, no color, and capacities of one. Metadata order does not matter.",
+        "startMs": 20249,
+        "endMs": 26079,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 788,
+    "audio": "Input-578e15453d.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Pipeline",
+    "title": "Three responsibilities",
+    "sentences": [
+      "The entry point receives a map path. MapParser reads it and creates a NetworkMap.",
+      "RoutePlanner builds complete routes for every drone, including waits and arrival times.",
+      "Simulation converts those routes into movement events. TerminalView prints them, one turn at a time."
+    ],
+    "tag": "04 / FLY-IN EXPLAINED",
+    "code": "    network = MapParser().parse(Path(arguments[1]))\n    routes = RoutePlanner(network).plan()\n    Simulation(network, routes, TerminalView()).run()",
+    "captions": [
+      {
+        "text": "The entry point receives a map path. MapParser reads it and creates a NetworkMap.",
+        "startMs": 120,
+        "endMs": 4844,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "RoutePlanner builds complete routes for every drone, including waits and arrival times.",
+        "startMs": 5004,
+        "endMs": 9539,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Simulation converts those routes into movement events. TerminalView prints them, one turn at a time.",
+        "startMs": 9699,
+        "endMs": 15561,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 473,
+    "audio": "Pipeline-afe0057459.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Toolkit",
+    "title": "Python tools, by role",
+    "sentences": [
+      "The runtime uses Python 3.10 or later and the standard library. Graph logic is implemented directly.",
+      "Dataclasses define data objects; Enum defines zone types; typing describes interfaces.",
+      "Regular expressions and pathlib handle parsing and files. heapq supplies the priority queue.",
+      "defaultdict supplies zero-based counters, itertools.count breaks ties, and sys and os handle terminal behavior."
+    ],
+    "tag": "05 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "The runtime uses Python 3.10 or later and the standard library. Graph logic is implemented directly.",
+        "startMs": 120,
+        "endMs": 6407,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Dataclasses define data objects; Enum defines zone types; typing describes interfaces.",
+        "startMs": 6567,
+        "endMs": 12511,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Regular expressions and pathlib handle parsing and files. heapq supplies the priority queue.",
+        "startMs": 12671,
+        "endMs": 17809,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "defaultdict supplies zero-based counters, itertools.count breaks ties, and sys and os handle terminal behavior.",
+        "startMs": 17969,
+        "endMs": 24728,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 748,
+    "audio": "Toolkit-e7c7901c62.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Models",
+    "title": "Objects describe the problem",
+    "sentences": [
+      "Zone stores a name, coordinates, type, color, and capacity. Connection stores endpoints and link capacity.",
+      "NetworkMap holds the graph and drone count. RouteAction describes one movement or wait, with start and end times.",
+      "DroneRoute groups a drone's actions and final arrival. A wait has no connection.",
+      "Dataclasses generate constructors, frozen records prevent accidental changes, and type hints make these relationships explicit."
+    ],
+    "tag": "06 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Zone stores a name, coordinates, type, color, and capacity. Connection stores endpoints and link capacity.",
+        "startMs": 120,
+        "endMs": 7359,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "NetworkMap holds the graph and drone count. RouteAction describes one movement or wait, with start and end times.",
+        "startMs": 7519,
+        "endMs": 13951,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "DroneRoute groups a drone's actions and final arrival. A wait has no connection.",
+        "startMs": 14111,
+        "endMs": 18337,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Dataclasses generate constructors, frozen records prevent accidental changes, and type hints make these relationships explicit.",
+        "startMs": 18497,
+        "endMs": 26249,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 793,
+    "audio": "Models-00e6181c9e.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Parsing",
+    "title": "Validate before planning",
+    "sentences": [
+      "The parser reads the file with a context manager, removes comments, and matches each declaration's syntax.",
+      "It validates metadata, positive regular-zone and link capacities, unique names, and known endpoints.",
+      "A connection from A to B duplicates B to A. Sorting the endpoint pair gives both the same identity.",
+      "Malformed input raises ParseError with a useful cause and line number when available. Missing files are handled too."
+    ],
+    "tag": "07 / FLY-IN EXPLAINED",
+    "code": "for line_number, raw_line in enumerate(lines, start=1):\n    text = raw_line.split(\"#\", 1)[0].strip()\n    if not text:\n        continue",
+    "captions": [
+      {
+        "text": "The parser reads the file with a context manager, removes comments, and matches each declaration's syntax.",
+        "startMs": 120,
+        "endMs": 6507,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "It validates metadata, positive regular-zone and link capacities, unique names, and known endpoints.",
+        "startMs": 6667,
+        "endMs": 12966,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A connection from A to B duplicates B to A. Sorting the endpoint pair gives both the same identity.",
+        "startMs": 13126,
+        "endMs": 18472,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Malformed input raises ParseError with a useful cause and line number when available. Missing files are handled too.",
+        "startMs": 18632,
+        "endMs": 24933,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 754,
+    "audio": "Parsing-20b09278a5.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Adjacency",
+    "title": "Build the adjacency list",
+    "sentences": [
+      "NetworkMap maps every zone name to a list of its connections.",
+      "A bidirectional connection is added to both endpoints' lists. Connection.other() returns the opposite endpoint.",
+      "This makes finding neighbors direct, without scanning every edge. No graph library is needed."
+    ],
+    "tag": "08 / FLY-IN EXPLAINED",
+    "code": "self.adjacency = {name: [] for name in self.zones}\nfor connection in self.connections:\n    self.adjacency[connection.first].append(connection)\n    self.adjacency[connection.second].append(connection)",
+    "captions": [
+      {
+        "text": "NetworkMap maps every zone name to a list of its connections.",
+        "startMs": 120,
+        "endMs": 3459,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A bidirectional connection is added to both endpoints' lists. Connection.other() returns the opposite endpoint.",
+        "startMs": 3619,
+        "endMs": 9586,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "This makes finding neighbors direct, without scanning every edge. No graph library is needed.",
+        "startMs": 9746,
+        "endMs": 15090,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 459,
+    "audio": "Adjacency-758f735c8a.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Capacity",
+    "title": "Check two separate limits",
+    "sentences": [
+      "Zone capacity limits how many drones occupy a location. Link capacity limits traversals during one turn.",
+      "Both directions share the same link capacity. A larger zone cannot bypass a narrow connection.",
+      "Start and goal have unlimited zone capacity; their capacity metadata is ignored. Their connections still have limits.",
+      "If either required resource is full, the drone must wait or choose another route."
+    ],
+    "tag": "09 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Zone capacity limits how many drones occupy a location. Link capacity limits traversals during one turn.",
+        "startMs": 120,
+        "endMs": 6700,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Both directions share the same link capacity. A larger zone cannot bypass a narrow connection.",
+        "startMs": 6860,
+        "endMs": 12162,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Start and goal have unlimited zone capacity; their capacity metadata is ignored. Their connections still have limits.",
+        "startMs": 12322,
+        "endMs": 18947,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "If either required resource is full, the drone must wait or choose another route.",
+        "startMs": 19107,
+        "endMs": 23202,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 702,
+    "audio": "Capacity-a47a31943d.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Turns",
+    "title": "Three turns, two drones",
+    "sentences": [
+      "On turn one, drone one enters A. Drone two waits at start.",
+      "On turn two, drone one reaches goal while drone two enters A. Departure frees space during that same turn.",
+      "On turn three, drone two reaches goal. Simultaneous movement is represented by the schedule's turns."
+    ],
+    "tag": "10 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "On turn one, drone one enters A. Drone two waits at start.",
+        "startMs": 120,
+        "endMs": 3612,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "On turn two, drone one reaches goal while drone two enters A. Departure frees space during that same turn.",
+        "startMs": 3772,
+        "endMs": 9666,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "On turn three, drone two reaches goal. Simultaneous movement is represented by the schedule's turns.",
+        "startMs": 9826,
+        "endMs": 15947,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 484,
+    "audio": "Turns-428cf33aa8.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Parallel",
+    "title": "Use alternate routes",
+    "sentences": [
+      "Four drones on one two-edge route take five turns because the middle zone holds only one drone.",
+      "Split the fleet across two independent routes and they finish in three turns.",
+      "A useful route depends on travel time and available capacity. The shortest individual path can become a bottleneck."
+    ],
+    "tag": "11 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Four drones on one two-edge route take five turns because the middle zone holds only one drone.",
+        "startMs": 120,
+        "endMs": 4898,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Split the fleet across two independent routes and they finish in three turns.",
+        "startMs": 5058,
+        "endMs": 8837,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A useful route depends on travel time and available capacity. The shortest individual path can become a bottleneck.",
+        "startMs": 8997,
+        "endMs": 15464,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 470,
+    "audio": "Parallel-01d2e28385.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Costs",
+    "title": "Destination type sets the cost",
+    "sentences": [
+      "Normal zones take one turn to enter. Priority zones also take one turn, but influence equal-time route choices.",
+      "Blocked zones cannot be entered. Restricted zones take two turns to enter.",
+      "Leaving a restricted zone for a normal destination takes one turn. The destination always determines the cost."
+    ],
+    "tag": "12 / FLY-IN EXPLAINED",
+    "code": "if self.kind is ZoneType.RESTRICTED:\n    return 2\nreturn 1",
+    "captions": [
+      {
+        "text": "Normal zones take one turn to enter. Priority zones also take one turn, but influence equal-time route choices.",
+        "startMs": 120,
+        "endMs": 6984,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Blocked zones cannot be entered. Restricted zones take two turns to enter.",
+        "startMs": 7144,
+        "endMs": 11157,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Leaving a restricted zone for a normal destination takes one turn. The destination always determines the cost.",
+        "startMs": 11317,
+        "endMs": 17494,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 531,
+    "audio": "Costs-712d252525.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Transit",
+    "title": "Reserve the restricted arrival",
+    "sentences": [
+      "A restricted movement starts with one turn on the connection. The next turn must reach the destination.",
+      "Before starting, the planner checks the link's first-turn capacity and the destination's second-turn capacity.",
+      "This guarantees arrival without waiting in transit. Output names the connection first, then the restricted zone."
+    ],
+    "tag": "13 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "A restricted movement starts with one turn on the connection. The next turn must reach the destination.",
+        "startMs": 120,
+        "endMs": 5551,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Before starting, the planner checks the link's first-turn capacity and the destination's second-turn capacity.",
+        "startMs": 5711,
+        "endMs": 11582,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "This guarantees arrival without waiting in transit. Output names the connection first, then the restricted zone.",
+        "startMs": 11742,
+        "endMs": 18105,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 549,
+    "audio": "Transit-d78fcdde8a.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Dijkstra",
+    "title": "Compute the remaining time",
+    "sentences": [
+      "Before planning drones, reverse Dijkstra computes shortest travel times from every accessible zone to the goal.",
+      "The goal has distance zero. A restricted entry costs two, so this example needs three turns from start.",
+      "Reverse search uses the original forward destination cost. Blocked zones are excluded.",
+      "These distances ignore reservations, making them lower bounds. They are computed once and reused for all drones."
+    ],
+    "tag": "14 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Before planning drones, reverse Dijkstra computes shortest travel times from every accessible zone to the goal.",
+        "startMs": 120,
+        "endMs": 6129,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The goal has distance zero. A restricted entry costs two, so this example needs three turns from start.",
+        "startMs": 6289,
+        "endMs": 12428,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Reverse search uses the original forward destination cost. Blocked zones are excluded.",
+        "startMs": 12588,
+        "endMs": 17468,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "These distances ignore reservations, making them lower bounds. They are computed once and reused for all drones.",
+        "startMs": 17628,
+        "endMs": 23874,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 722,
+    "audio": "Dijkstra-0885566b38.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Search",
+    "title": "Search location AND time",
+    "sentences": [
+      "Knowing the zone alone is insufficient: A can be busy on turn one and free on turn two.",
+      "A search state contains the zone name and the turn. Waiting reaches a later state in the same zone.",
+      "Moving reaches a neighboring zone at its arrival turn. Capacity checks decide which transitions are allowed."
+    ],
+    "tag": "15 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Knowing the zone alone is insufficient: A can be busy on turn one and free on turn two.",
+        "startMs": 120,
+        "endMs": 4856,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A search state contains the zone name and the turn. Waiting reaches a later state in the same zone.",
+        "startMs": 5016,
+        "endMs": 10190,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Moving reaches a neighboring zone at its arrival turn. Capacity checks decide which transitions are allowed.",
+        "startMs": 10350,
+        "endMs": 16288,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 495,
+    "audio": "Search-072b244d86.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Heap",
+    "title": "A* chooses what to explore",
+    "sentences": [
+      "A star estimates arrival by adding the current turn to the shortest remaining travel time.",
+      "A min-heap explores the smallest estimate first. Time and priority penalties resolve secondary choices.",
+      "The search stores its heap, best preference per state, predecessor records, and an insertion counter.",
+      "A better route updates the state record. Old heap entries with outdated preferences are skipped."
+    ],
+    "tag": "16 / FLY-IN EXPLAINED",
+    "code": "estimate = turn + self._heuristic[zone_name]\nheapq.heappush(\n    search.queue,\n    (estimate, turn, preference, next(search.tie_breaker), zone_name),\n)",
+    "captions": [
+      {
+        "text": "A star estimates arrival by adding the current turn to the shortest remaining travel time.",
+        "startMs": 120,
+        "endMs": 4750,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A min-heap explores the smallest estimate first. Time and priority penalties resolve secondary choices.",
+        "startMs": 4910,
+        "endMs": 11253,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The search stores its heap, best preference per state, predecessor records, and an insertion counter.",
+        "startMs": 11413,
+        "endMs": 17440,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A better route updates the state record. Old heap entries with outdated preferences are skipped.",
+        "startMs": 17600,
+        "endMs": 22648,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 685,
+    "audio": "Heap-2318d4d9f9.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Waiting",
+    "title": "Offer a wait or a move",
+    "sentences": [
+      "The wait helper advances one turn and checks whether the current zone still has space then.",
+      "The move helper rejects blocked destinations and checks the link at departure and the zone at arrival.",
+      "The offer helper records useful states and pushes their estimated arrival into the heap.",
+      "Priority zones use a lower secondary penalty; they do not reduce the one-turn movement cost."
+    ],
+    "tag": "17 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "The wait helper advances one turn and checks whether the current zone still has space then.",
+        "startMs": 120,
+        "endMs": 4564,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The move helper rejects blocked destinations and checks the link at departure and the zone at arrival.",
+        "startMs": 4724,
+        "endMs": 9658,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The offer helper records useful states and pushes their estimated arrival into the heap.",
+        "startMs": 9818,
+        "endMs": 14266,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Priority zones use a lower secondary penalty; they do not reduce the one-turn movement cost.",
+        "startMs": 14426,
+        "endMs": 19895,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 603,
+    "audio": "Waiting-cd829af1f1.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Reserve",
+    "title": "Book zones and connections",
+    "sentences": [
+      "After finding a route, the planner increments its zone and link usage counters for specific turns.",
+      "Waiting actions reserve zone occupancy too, even though they produce no movement output.",
+      "Later drones search around these bookings. End-of-turn occupancy permits one drone to leave as another enters.",
+      "Connection keys are direction-independent, so opposite traversals consume the same capacity allowance."
+    ],
+    "tag": "18 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "After finding a route, the planner increments its zone and link usage counters for specific turns.",
+        "startMs": 120,
+        "endMs": 5540,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Waiting actions reserve zone occupancy too, even though they produce no movement output.",
+        "startMs": 5700,
+        "endMs": 10549,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Later drones search around these bookings. End-of-turn occupancy permits one drone to leave as another enters.",
+        "startMs": 10709,
+        "endMs": 16496,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Connection keys are direction-independent, so opposite traversals consume the same capacity allowance.",
+        "startMs": 16656,
+        "endMs": 22367,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 677,
+    "audio": "Reserve-d8c015eebf.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Reconstruct",
+    "title": "Turn predecessors into a route",
+    "sentences": [
+      "Every accepted state remembers the previous state and the action that reached it.",
+      "When the search reaches goal, it follows those pointers backward, collects the actions, and reverses them.",
+      "The resulting DroneRoute is a complete sequence of waits and movements with exact times."
+    ],
+    "tag": "19 / FLY-IN EXPLAINED",
+    "code": "actions: List[RouteAction] = []\nwhile state in previous:\n    state, action = previous[state]\n    actions.append(action)\nactions.reverse()\nreturn tuple(actions)",
+    "captions": [
+      {
+        "text": "Every accepted state remembers the previous state and the action that reached it.",
+        "startMs": 120,
+        "endMs": 3914,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "When the search reaches goal, it follows those pointers backward, collects the actions, and reverses them.",
+        "startMs": 4074,
+        "endMs": 10143,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The resulting DroneRoute is a complete sequence of waits and movements with exact times.",
+        "startMs": 10303,
+        "endMs": 14695,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 447,
+    "audio": "Reconstruct-f85284d0e0.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Planning",
+    "title": "Plan the fleet in order",
+    "sentences": [
+      "Drones are planned in identifier order. Each completed route is reserved before the next drone is searched.",
+      "The search horizon is the latest existing arrival plus the unconstrained shortest travel time.",
+      "Waiting at the unlimited start until earlier drones finish guarantees a clear fallback route within that bound.",
+      "A disconnected or blocked-off goal raises PlanningError. Complete routes avoid runtime deadlock decisions."
+    ],
+    "tag": "20 / FLY-IN EXPLAINED",
+    "code": "for drone_id in range(1, self._network.drone_count + 1):\n    route = self._find_route(drone_id)\n    self._reserve(route)\n    routes.append(route)",
+    "captions": [
+      {
+        "text": "Drones are planned in identifier order. Each completed route is reserved before the next drone is searched.",
+        "startMs": 120,
+        "endMs": 5629,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The search horizon is the latest existing arrival plus the unconstrained shortest travel time.",
+        "startMs": 5789,
+        "endMs": 10712,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Waiting at the unlimited start until earlier drones finish guarantees a clear fallback route within that bound.",
+        "startMs": 10872,
+        "endMs": 16339,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "A disconnected or blocked-off goal raises PlanningError. Complete routes avoid runtime deadlock decisions.",
+        "startMs": 16499,
+        "endMs": 22226,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 673,
+    "audio": "Planning-8a38471507.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "MovementOutput",
+    "title": "Convert actions into output",
+    "sentences": [
+      "Simulation groups Movement records by turn. A record contains a drone identifier, target, and color.",
+      "Wait actions are skipped. Restricted movement adds a connection event before its destination event.",
+      "TerminalView sorts movements by drone identifier and prints space-separated tokens. Each line represents one turn.",
+      "Delivered drones have no later actions. Output stops at the final drone's arrival."
+    ],
+    "tag": "21 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Simulation groups Movement records by turn. A record contains a drone identifier, target, and color.",
+        "startMs": 120,
+        "endMs": 6676,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Wait actions are skipped. Restricted movement adds a connection event before its destination event.",
+        "startMs": 6836,
+        "endMs": 12124,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "TerminalView sorts movements by drone identifier and prints space-separated tokens. Each line represents one turn.",
+        "startMs": 12284,
+        "endMs": 18964,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Delivered drones have no later actions. Output stops at the final drone's arrival.",
+        "startMs": 19124,
+        "endMs": 23704,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 717,
+    "audio": "MovementOutput-baf9c6a60a.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Colors",
+    "title": "Use colors without changing tokens",
+    "sentences": [
+      "A movement token contains the drone identifier and target, such as D1-A.",
+      "On an interactive terminal, destination color metadata selects an ANSI color for that token.",
+      "Piped or redirected output stays plain, and the NO_COLOR environment variable disables color.",
+      "Expected parsing and planning errors go to standard error, with exit status one; successful runs return zero."
+    ],
+    "tag": "22 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "A movement token contains the drone identifier and target, such as D1-A.",
+        "startMs": 120,
+        "endMs": 5019,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "On an interactive terminal, destination color metadata selects an ANSI color for that token.",
+        "startMs": 5179,
+        "endMs": 10791,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Piped or redirected output stays plain, and the NO_COLOR environment variable disables color.",
+        "startMs": 10951,
+        "endMs": 16416,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Expected parsing and planning errors go to standard error, with exit status one; successful runs return zero.",
+        "startMs": 16576,
+        "endMs": 23326,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 706,
+    "audio": "Colors-fdf760a5ea.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Launch",
+    "title": "Run and inspect the program",
+    "sentences": [
+      "Run from the submission directory and pass a real map path with the Makefile's MAP setting.",
+      "The direct Python command also accepts a map path. Without a MAP setting, make run looks for map.txt.",
+      "Make install installs the development checks. Make debug opens the Python debugger; make clean removes caches.",
+      "The submission contains the Python modules, Makefile, README, and .gitignore. Maps and private tests are kept separately."
+    ],
+    "tag": "23 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Run from the submission directory and pass a real map path with the Makefile's MAP setting.",
+        "startMs": 120,
+        "endMs": 4661,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The direct Python command also accepts a map path. Without a MAP setting, make run looks for map.txt.",
+        "startMs": 4821,
+        "endMs": 11369,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Make install installs the development checks. Make debug opens the Python debugger; make clean removes caches.",
+        "startMs": 11529,
+        "endMs": 18221,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The submission contains the Python modules, Makefile, README, and .gitignore. Maps and private tests are kept separately.",
+        "startMs": 18381,
+        "endMs": 25886,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 782,
+    "audio": "Launch-05a417766d.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Checks",
+    "title": "Check behavior, style, and types",
+    "sentences": [
+      "flake8 checks style. mypy checks type hints. Docstrings explain classes and methods.",
+      "Private tests cover malformed input, blocked routes, capacities, priority choices, restricted transit, and same-turn departures.",
+      "They reconstruct resource usage from planned actions and verify that every drone reaches goal safely.",
+      "Supplied maps and larger fleets also test performance. A valid schedule matters before optimizing its turn count."
+    ],
+    "tag": "24 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "flake8 checks style. mypy checks type hints. Docstrings explain classes and methods.",
+        "startMs": 120,
+        "endMs": 5367,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Private tests cover malformed input, blocked routes, capacities, priority choices, restricted transit, and same-turn departures.",
+        "startMs": 5527,
+        "endMs": 14112,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "They reconstruct resource usage from planned actions and verify that every drone reaches goal safely.",
+        "startMs": 14272,
+        "endMs": 19473,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Supplied maps and larger fleets also test performance. A valid schedule matters before optimizing its turn count.",
+        "startMs": 19633,
+        "endMs": 26422,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 799,
+    "audio": "Checks-ad61412143.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Limits",
+    "title": "Understand the trade-off",
+    "sentences": [
+      "Each drone gets its earliest route while earlier reservations remain fixed. This does not guarantee a globally optimal fleet schedule.",
+      "More zones and a longer horizon create more location-and-turn states. Heap operations cost logarithmic time in queue size.",
+      "Search bookkeeping, resource counters, and stored routes consume memory. Planning repeats for each drone, while distance estimates are reused.",
+      "The design favors clear capacity checks and complete plans over changing earlier routes during every search."
+    ],
+    "tag": "25 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Each drone gets its earliest route while earlier reservations remain fixed. This does not guarantee a globally optimal fleet schedule.",
+        "startMs": 120,
+        "endMs": 7378,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "More zones and a longer horizon create more location-and-turn states. Heap operations cost logarithmic time in queue size.",
+        "startMs": 7538,
+        "endMs": 14612,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Search bookkeeping, resource counters, and stored routes consume memory. Planning repeats for each drone, while distance estimates are reused.",
+        "startMs": 14772,
+        "endMs": 23025,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "The design favors clear capacity checks and complete plans over changing earlier routes during every search.",
+        "startMs": 23185,
+        "endMs": 28926,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 874,
+    "audio": "Limits-6fc3a328fb.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  },
+  {
+    "id": "Recap",
+    "title": "From map to safe arrivals",
+    "sentences": [
+      "Parse the map into typed objects and a custom graph.",
+      "Compute remaining distances, search timed routes, and reserve each drone's resources.",
+      "Convert actions into movement lines until the entire fleet arrives. Routes, timing, and capacity work together."
+    ],
+    "tag": "26 / FLY-IN EXPLAINED",
+    "captions": [
+      {
+        "text": "Parse the map into typed objects and a custom graph.",
+        "startMs": 120,
+        "endMs": 2894,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Compute remaining distances, search timed routes, and reserve each drone's resources.",
+        "startMs": 3054,
+        "endMs": 7976,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      },
+      {
+        "text": "Convert actions into movement lines until the entire fleet arrives. Routes, timing, and capacity work together.",
+        "startMs": 8136,
+        "endMs": 14894,
+        "timestampMs": null,
+        "confidence": null,
+        "pageBreakAfter": true
+      }
+    ],
+    "durationInFrames": 453,
+    "audio": "Recap-568edc7f9b.m4a",
+    "leadSeconds": 0.12,
+    "gapSeconds": 0.16,
+    "tailSeconds": 0.18
+  }
+]

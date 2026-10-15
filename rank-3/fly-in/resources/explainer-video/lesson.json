@@ -1,0 +1,277 @@
+[
+  {
+    "id": "Intro",
+    "title": "Deliver the whole fleet",
+    "sentences": [
+      "Fly-in simulates drones moving from one start zone to one goal through a connected network.",
+      "The objective is to finish the entire fleet in as few turns as possible.",
+      "A valid schedule must respect movement costs, zone space, and connection capacity."
+    ],
+    "tag": "01 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Network",
+    "title": "The network is a graph",
+    "sentences": [
+      "Each location is a zone, also called a graph node. Each connection is a two-way edge.",
+      "Drones can move only between connected neighbors, and they can wait when a resource is busy.",
+      "Coordinates describe locations; the destination's type determines travel time, rather than physical distance."
+    ],
+    "tag": "02 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Input",
+    "title": "Read the map format",
+    "sentences": [
+      "The first data declaration gives a positive drone count. Exactly one start and one end are required.",
+      "Every zone has a unique name and integer coordinates. Declare all zones before connections, whose endpoints must exist.",
+      "Bracket metadata sets zone type, color, zone capacity, or link capacity. Comments begin with a hash.",
+      "Defaults are normal zones, no color, and capacities of one. Metadata order does not matter."
+    ],
+    "tag": "03 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Pipeline",
+    "title": "Three responsibilities",
+    "sentences": [
+      "The entry point receives a map path. MapParser reads it and creates a NetworkMap.",
+      "RoutePlanner builds complete routes for every drone, including waits and arrival times.",
+      "Simulation converts those routes into movement events. TerminalView prints them, one turn at a time."
+    ],
+    "tag": "04 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Toolkit",
+    "title": "Python tools, by role",
+    "sentences": [
+      "The runtime uses Python 3.10 or later and the standard library. Graph logic is implemented directly.",
+      "Dataclasses define data objects; Enum defines zone types; typing describes interfaces.",
+      "Regular expressions and pathlib handle parsing and files. heapq supplies the priority queue.",
+      "defaultdict supplies zero-based counters, itertools.count breaks ties, and sys and os handle terminal behavior."
+    ],
+    "tag": "05 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Models",
+    "title": "Objects describe the problem",
+    "sentences": [
+      "Zone stores a name, coordinates, type, color, and capacity. Connection stores endpoints and link capacity.",
+      "NetworkMap holds the graph and drone count. RouteAction describes one movement or wait, with start and end times.",
+      "DroneRoute groups a drone's actions and final arrival. A wait has no connection.",
+      "Dataclasses generate constructors, frozen records prevent accidental changes, and type hints make these relationships explicit."
+    ],
+    "tag": "06 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Parsing",
+    "title": "Validate before planning",
+    "sentences": [
+      "The parser reads the file with a context manager, removes comments, and matches each declaration's syntax.",
+      "It validates metadata, positive regular-zone and link capacities, unique names, and known endpoints.",
+      "A connection from A to B duplicates B to A. Sorting the endpoint pair gives both the same identity.",
+      "Malformed input raises ParseError with a useful cause and line number when available. Missing files are handled too."
+    ],
+    "tag": "07 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Adjacency",
+    "title": "Build the adjacency list",
+    "sentences": [
+      "NetworkMap maps every zone name to a list of its connections.",
+      "A bidirectional connection is added to both endpoints' lists. Connection.other() returns the opposite endpoint.",
+      "This makes finding neighbors direct, without scanning every edge. No graph library is needed."
+    ],
+    "tag": "08 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Capacity",
+    "title": "Check two separate limits",
+    "sentences": [
+      "Zone capacity limits how many drones occupy a location. Link capacity limits traversals during one turn.",
+      "Both directions share the same link capacity. A larger zone cannot bypass a narrow connection.",
+      "Start and goal have unlimited zone capacity; their capacity metadata is ignored. Their connections still have limits.",
+      "If either required resource is full, the drone must wait or choose another route."
+    ],
+    "tag": "09 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Turns",
+    "title": "Three turns, two drones",
+    "sentences": [
+      "On turn one, drone one enters A. Drone two waits at start.",
+      "On turn two, drone one reaches goal while drone two enters A. Departure frees space during that same turn.",
+      "On turn three, drone two reaches goal. Simultaneous movement is represented by the schedule's turns."
+    ],
+    "tag": "10 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Parallel",
+    "title": "Use alternate routes",
+    "sentences": [
+      "Four drones on one two-edge route take five turns because the middle zone holds only one drone.",
+      "Split the fleet across two independent routes and they finish in three turns.",
+      "A useful route depends on travel time and available capacity. The shortest individual path can become a bottleneck."
+    ],
+    "tag": "11 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Costs",
+    "title": "Destination type sets the cost",
+    "sentences": [
+      "Normal zones take one turn to enter. Priority zones also take one turn, but influence equal-time route choices.",
+      "Blocked zones cannot be entered. Restricted zones take two turns to enter.",
+      "Leaving a restricted zone for a normal destination takes one turn. The destination always determines the cost."
+    ],
+    "tag": "12 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Transit",
+    "title": "Reserve the restricted arrival",
+    "sentences": [
+      "A restricted movement starts with one turn on the connection. The next turn must reach the destination.",
+      "Before starting, the planner checks the link's first-turn capacity and the destination's second-turn capacity.",
+      "This guarantees arrival without waiting in transit. Output names the connection first, then the restricted zone."
+    ],
+    "tag": "13 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Dijkstra",
+    "title": "Compute the remaining time",
+    "sentences": [
+      "Before planning drones, reverse Dijkstra computes shortest travel times from every accessible zone to the goal.",
+      "The goal has distance zero. A restricted entry costs two, so this example needs three turns from start.",
+      "Reverse search uses the original forward destination cost. Blocked zones are excluded.",
+      "These distances ignore reservations, making them lower bounds. They are computed once and reused for all drones."
+    ],
+    "tag": "14 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Search",
+    "title": "Search location AND time",
+    "sentences": [
+      "Knowing the zone alone is insufficient: A can be busy on turn one and free on turn two.",
+      "A search state contains the zone name and the turn. Waiting reaches a later state in the same zone.",
+      "Moving reaches a neighboring zone at its arrival turn. Capacity checks decide which transitions are allowed."
+    ],
+    "tag": "15 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Heap",
+    "title": "A* chooses what to explore",
+    "sentences": [
+      "A star estimates arrival by adding the current turn to the shortest remaining travel time.",
+      "A min-heap explores the smallest estimate first. Time and priority penalties resolve secondary choices.",
+      "The search stores its heap, best preference per state, predecessor records, and an insertion counter.",
+      "A better route updates the state record. Old heap entries with outdated preferences are skipped."
+    ],
+    "tag": "16 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Waiting",
+    "title": "Offer a wait or a move",
+    "sentences": [
+      "The wait helper advances one turn and checks whether the current zone still has space then.",
+      "The move helper rejects blocked destinations and checks the link at departure and the zone at arrival.",
+      "The offer helper records useful states and pushes their estimated arrival into the heap.",
+      "Priority zones use a lower secondary penalty; they do not reduce the one-turn movement cost."
+    ],
+    "tag": "17 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Reserve",
+    "title": "Book zones and connections",
+    "sentences": [
+      "After finding a route, the planner increments its zone and link usage counters for specific turns.",
+      "Waiting actions reserve zone occupancy too, even though they produce no movement output.",
+      "Later drones search around these bookings. End-of-turn occupancy permits one drone to leave as another enters.",
+      "Connection keys are direction-independent, so opposite traversals consume the same capacity allowance."
+    ],
+    "tag": "18 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Reconstruct",
+    "title": "Turn predecessors into a route",
+    "sentences": [
+      "Every accepted state remembers the previous state and the action that reached it.",
+      "When the search reaches goal, it follows those pointers backward, collects the actions, and reverses them.",
+      "The resulting DroneRoute is a complete sequence of waits and movements with exact times."
+    ],
+    "tag": "19 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Planning",
+    "title": "Plan the fleet in order",
+    "sentences": [
+      "Drones are planned in identifier order. Each completed route is reserved before the next drone is searched.",
+      "The search horizon is the latest existing arrival plus the unconstrained shortest travel time.",
+      "Waiting at the unlimited start until earlier drones finish guarantees a clear fallback route within that bound.",
+      "A disconnected or blocked-off goal raises PlanningError. Complete routes avoid runtime deadlock decisions."
+    ],
+    "tag": "20 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "MovementOutput",
+    "title": "Convert actions into output",
+    "sentences": [
+      "Simulation groups Movement records by turn. A record contains a drone identifier, target, and color.",
+      "Wait actions are skipped. Restricted movement adds a connection event before its destination event.",
+      "TerminalView sorts movements by drone identifier and prints space-separated tokens. Each line represents one turn.",
+      "Delivered drones have no later actions. Output stops at the final drone's arrival."
+    ],
+    "tag": "21 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Colors",
+    "title": "Use colors without changing tokens",
+    "sentences": [
+      "A movement token contains the drone identifier and target, such as D1-A.",
+      "On an interactive terminal, destination color metadata selects an ANSI color for that token.",
+      "Piped or redirected output stays plain, and the NO_COLOR environment variable disables color.",
+      "Expected parsing and planning errors go to standard error, with exit status one; successful runs return zero."
+    ],
+    "tag": "22 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Launch",
+    "title": "Run and inspect the program",
+    "sentences": [
+      "Run from the submission directory and pass a real map path with the Makefile's MAP setting.",
+      "The direct Python command also accepts a map path. Without a MAP setting, make run looks for map.txt.",
+      "Make install installs the development checks. Make debug opens the Python debugger; make clean removes caches.",
+      "The submission contains the Python modules, Makefile, README, and .gitignore. Maps and private tests are kept separately."
+    ],
+    "tag": "23 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Checks",
+    "title": "Check behavior, style, and types",
+    "sentences": [
+      "flake8 checks style. mypy checks type hints. Docstrings explain classes and methods.",
+      "Private tests cover malformed input, blocked routes, capacities, priority choices, restricted transit, and same-turn departures.",
+      "They reconstruct resource usage from planned actions and verify that every drone reaches goal safely.",
+      "Supplied maps and larger fleets also test performance. A valid schedule matters before optimizing its turn count."
+    ],
+    "tag": "24 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Limits",
+    "title": "Understand the trade-off",
+    "sentences": [
+      "Each drone gets its earliest route while earlier reservations remain fixed. This does not guarantee a globally optimal fleet schedule.",
+      "More zones and a longer horizon create more location-and-turn states. Heap operations cost logarithmic time in queue size.",
+      "Search bookkeeping, resource counters, and stored routes consume memory. Planning repeats for each drone, while distance estimates are reused.",
+      "The design favors clear capacity checks and complete plans over changing earlier routes during every search."
+    ],
+    "tag": "25 / FLY-IN EXPLAINED"
+  },
+  {
+    "id": "Recap",
+    "title": "From map to safe arrivals",
+    "sentences": [
+      "Parse the map into typed objects and a custom graph.",
+      "Compute remaining distances, search timed routes, and reserve each drone's resources.",
+      "Convert actions into movement lines until the entire fleet arrives. Routes, timing, and capacity work together."
+    ],
+    "tag": "26 / FLY-IN EXPLAINED"
+  }
+]

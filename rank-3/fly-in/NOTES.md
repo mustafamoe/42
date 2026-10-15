@@ -2,14 +2,24 @@
 
 ## Status
 
-Mandatory code validated against the supplied subject, evaluation sheet, and
-all nine mandatory maps. The in-person algorithm explanation and live coding
-exercise still require the learner's demonstration during the defense.
+The 2026-10-14 audit below records validation against the subject, earlier
+evaluation sheet, and all nine mandatory maps. The updated evaluation sheet
+was stored on 2026-10-16; that audit has not been repeated against it.
+The in-person algorithm explanation and live coding exercise still require
+the learner's demonstration during the defense.
 
 ## Official Inputs
 
 - `resources/en.subject.pdf`: Fly-in subject, version 1.6, 24 pages.
-- `resources/evaluation-sheet.pdf`: supplied 2026-10-14, seven pages read in
+- `resources/evaluation-sheet.pdf`: current supplied scale, stored 2026-10-16.
+  Title: `Intra Projects Fly-in Edit`; printed date: 2026-10-15; seven pages.
+  No scale version is stated. The attachment is preserved unchanged; SHA-256:
+  `18ae9aef29f33185e71e50f40bd1c1e4a4580055c0cbc9ff3eb612230b213be2`.
+  The live coding task asks for per-turn usage of one zone and one connection
+  within ten minutes, using an entry point that fits the implementation; a
+  CLI flag is optional. The scale also updates parser checks and benchmarks.
+- `resources/evaluation-sheet-2026-08-16.pdf`: earlier scale, supplied
+  2026-10-14, seven pages read in
   full with rendered checks of the parser, benchmark, and live coding sections.
   Title: `Intra Projects Fly-in Edit`; printed date: 2026-08-16. No scale version
   is stated. The original attachment is preserved unchanged; SHA-256:
@@ -215,7 +225,7 @@ lint`, plain `mypy .`, all 17 tests, the README example, all nine map CLI runs,
 virtual environment and no sibling project files. Source hashes and command
 results are saved in `tests/evaluation-audit.json`.
 
-## Defense Preparation: `--capacity-info`
+## Defense Preparation: `--capacity-info` (Earlier Sheet)
 
 Page 6 asks the learner to add and demonstrate this flag within ten minutes
 during the defense. It is a live modification exercise, so it is not
